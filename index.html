@@ -45,7 +45,6 @@
     }
     header h1 { font-size: 0.95rem; color: #e6c669; letter-spacing: 1px; }
     
-    /* BGMボタン（ON/OFFで見た目が変わるように変更） */
     .bgm-btn {
       background: #3d3d56; color: #fff; border: 1px solid #5a4b7c; padding: 5px 12px;
       border-radius: 12px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s;
@@ -65,21 +64,20 @@
       z-index: 1;
     }
 
-    /* 相棒ヒナの立ち絵：右側に配置しつつ、左側（中央寄り）を大きく画面外へはみ出させて顔をドアップ化 */
     #chara-container {
       position: absolute;
-      bottom: -60px; 
-      right: -100px; /* 右側に配置 */
-      width: 650px;  /* さらに巨大化して顔をアップに */
-      height: 900px;
+      bottom: -10px;
+      right: -30px;
+      width: 420px;
+      height: 520px;
       pointer-events: none;
-      z-index: 3;    /* 吹き出し(z-index: 5)の背後に配置 */
+      z-index: 3;
     }
     .chara-img {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      object-position: 25% 15%; /* 左側の手をあえてフレーム外へ逃がし、顔を大きく映す調整 */
+      object-position: right bottom;
       transition: all 0.3s ease;
       opacity: 0.4;
       filter: brightness(0.5);
@@ -87,7 +85,7 @@
     .chara-img.active {
       opacity: 1;
       filter: brightness(1);
-      transform: translateY(-8px);
+      transform: translateY(-5px);
     }
 
     .inspect-obj {
@@ -109,10 +107,9 @@
     }
     .inspect-obj:active { transform: scale(0.95); background: rgba(230, 198, 105, 0.4); }
 
-    /* ダイアログUI（すりガラス効果：完全に透けるように設定） */
     #dialogue-area {
       height: 240px;
-      background: rgba(20, 20, 30, 0.35); /* 適度な透明度 */
+      background: rgba(20, 20, 30, 0.35);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border-top: 1px solid rgba(255, 255, 255, 0.25);
@@ -214,7 +211,7 @@
   </div>
 
   <div id="chara-container">
-    <img id="img-hina" class="chara-img" src="hina.png" alt="ヒナ">
+    <img id="img-hina" class="chara-img" src="hina1.png" alt="ヒナ">
   </div>
 
   <div id="dialogue-area">
