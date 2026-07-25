@@ -43,7 +43,7 @@
       border-radius: 12px; font-size: 0.75rem; cursor: pointer;
     }
 
-    /* ゲーム画面エリア（背景画像切替用） */
+    /* ゲーム画面エリア */
     #stage-screen {
       flex: 1;
       position: relative;
@@ -58,23 +58,24 @@
       transition: background-image 0.5s ease;
     }
 
-    /* 相棒ヒナの立ち絵画像 */
+    /* 相棒ヒナの立ち絵エリア */
     #chara-container {
       position: absolute;
-      bottom: 0;
-      right: 10px;
-      width: 160px;
-      height: 250px;
+      bottom: -10px;
+      right: -10px;
+      width: 260px;
+      height: 420px;
       pointer-events: none;
-      z-index: 1;
+      z-index: 3;
       display: flex;
       align-items: flex-end;
       justify-content: center;
     }
     .chara-img {
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: top center;
       transition: all 0.3s ease;
       opacity: 0.4;
       filter: brightness(0.5);
@@ -82,13 +83,13 @@
     .chara-img.active {
       opacity: 1;
       filter: brightness(1);
-      transform: translateY(-5px);
+      transform: translateY(-8px);
     }
 
     /* クリック要素 */
     .inspect-obj {
       position: absolute;
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(0, 0, 0, 0.65);
       border: 2px solid #e6c669;
       border-radius: 8px;
       color: #fff;
@@ -100,21 +101,24 @@
       cursor: pointer;
       text-shadow: 0 1px 3px #000;
       box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-      z-index: 2;
+      z-index: 4;
       transition: transform 0.1s, background 0.2s;
     }
     .inspect-obj:active { transform: scale(0.95); background: rgba(230, 198, 105, 0.4); }
 
-    /* ダイアログUI */
+    /* ダイアログUI（透過＆すりガラス風に調整） */
     #dialogue-area {
       height: 220px;
-      background: rgba(18, 18, 28, 0.95);
-      border-top: 2px solid #5a4b7c;
+      background: rgba(18, 18, 28, 0.65); /* 透過度を上げて後ろを見せる */
+      backdrop-filter: blur(8px); /* 後ろをぼかして文字を読みやすくする */
+      -webkit-backdrop-filter: blur(8px);
+      border-top: 2px solid rgba(90, 75, 124, 0.8);
       padding: 12px 16px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       z-index: 5;
+      position: relative;
     }
     .speaker-tag {
       font-size: 0.85rem;
@@ -124,16 +128,16 @@
       display: inline-block;
       margin-bottom: 6px;
     }
-    .speaker-aoi { background: #2b4c7e; color: #a5c9ff; }
-    .speaker-hina { background: #7e2b53; color: #ffa5d8; }
-    .dialogue-text { font-size: 0.9rem; line-height: 1.5; color: #f0f0f0; min-height: 3em; }
+    .speaker-aoi { background: rgba(43, 76, 126, 0.85); color: #a5c9ff; }
+    .speaker-hina { background: rgba(126, 43, 83, 0.85); color: #ffa5d8; }
+    .dialogue-text { font-size: 0.9rem; line-height: 1.5; color: #f0f0f0; min-height: 3em; text-shadow: 0 1px 2px #000; }
 
     .control-btns { display: flex; justify-content: space-between; gap: 8px; }
     .btn-action {
-      background: #3d3d56; color: #fff; border: none; padding: 6px 12px;
+      background: rgba(61, 61, 86, 0.85); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px;
       border-radius: 6px; font-size: 0.8rem; cursor: pointer; flex: 1;
     }
-    .btn-action:hover { background: #5a4b7c; }
+    .btn-action:hover { background: rgba(90, 75, 124, 0.9); }
 
     /* モーダル汎用 */
     .modal {
@@ -177,7 +181,7 @@
     </div>
   </div>
 
-  <!-- ダイアログ -->
+  <!-- ダイアログ（透過処理） -->
   <div id="dialogue-area">
     <div>
       <span id="speaker-tag" class="speaker-tag speaker-hina">ヒナ</span>
@@ -294,7 +298,6 @@
     currentStage = 0;
     storyIndex = 0;
     
-    // プロローグは外観背景
     setBgImage(BG_OUTSIDE);
 
     document.getElementById('btn-next').style.display = 'block';
@@ -347,7 +350,6 @@
     currentStage = stageNum;
     selectedColorSequence = [];
 
-    // ステージ内（洋館の中）背景に切り替え
     setBgImage(BG_INSIDE);
 
     document.getElementById('btn-next').style.display = 'none';
@@ -485,7 +487,6 @@
     document.getElementById('interactive-objects').innerHTML = '';
     document.getElementById('stage-title').textContent = "EPILOGUE: 事件解決";
     
-    // エピローグで再び外観（夜空）の背景に戻す
     setBgImage(BG_OUTSIDE);
 
     document.getElementById('btn-next').style.display = 'block';
