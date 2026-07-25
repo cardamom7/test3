@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>黄昏の解律師 - 調査プロトタイプ</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+    body {
+      background-color: #1a1a24;
+      color: #e0e0e0;
+      font-family: 'Helvetica Neue', Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    #game-container {
+      width: 100%;
+      max-width: 480px;
+      height: 720px;
+      background: #252533;
+      border: 2px solid #4a4a68;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    /* ヘッダー */
+    header {
+      background: #181822;
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #3d3d56;
+    }
+    header h1 {
+      font-size: 1.1rem;
+      letter-spacing: 2px;
+      color: #d4af37;
+    }
+    /* ルーム画面 */
+    #room-screen {
+      flex: 1;
+      position: relative;
+      background: linear-gradient(to bottom, #2c2c3d, #1e1e2b);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .inspect-obj {
+      position: absolute;
+      background: rgba(212, 175, 55, 0.15);
+      border: 2px dashed #d4af37;
+      border-radius: 8px;
+      color: #d4af37;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .inspect-obj:active {
+      transform: scale(0.95);
+      background: rgba(212, 175, 55, 0.3);
+    }
+    #obj-clock { top: 10%; left: 10%; width: 100px; height: 100px; }
+    #obj-books { top: 15%; right: 10%; width: 120px; height: 140px; }
+    #obj-safe  { bottom: 15%; left: 35%; width: 140px; height: 110px; }
+
+    /* ダイアログ＆立ち絵エリア */
+    #dialogue-area {
+      height: 220px;
+      background: #13131c;
+      border-top: 2px solid #3d3d56;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+    .speaker-name {
+      color: #d4af37;
+      font-size: 0.9rem;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    .dialogue-text {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: #f0f0f0;
+      white-space: pre-wrap;
+    }
+    .hint-btn {
+      align-self: flex-end;
+      background: #3d3d56;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+
+    /* モーダル（金庫入力画面） */
+    #safe-modal {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+    .modal-content {
+      background: #252533;
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid #d4af37;
+      text-align: center;
+      width: 80%;
+    }
+    .code-input {
+      width: 100%;
+      font-size: 1.8rem;
+      letter-spacing: 8px;
+      text-align: center;
+      padding: 8px;
+      margin: 15px 0;
+      background: #13131c;
+      color: #d4af37;
+      border: 1px solid #4a4a68;
+      border-radius: 6px;
+    }
+    .modal-btns {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .btn-submit { background: #d4af37; color: #1a1a24; }
+    .btn-close { background: #4a4a68; color: #fff; }
+  </style>
+</head>
+<body>
+
+<div id="game-container">
+  <header>
+    <h1>FILE 01: 書斎の開かずの金庫</h1>
+  </header>
+
+  <!-- ルーム画面 -->
+  <div id="room-screen">
+    <div id="obj-clock" class="inspect-obj" onclick="inspect('clock')">古い掛け時計</div>
+    <div id="obj-books" class="inspect-obj" onclick="inspect('books')">整頓された本棚</div>
+    <div id="obj-safe" class="inspect-obj" onclick="inspect('safe')">堅牢な金庫</div>
+  </div>
+
+  <!-- ダイアログエリア -->
+  <div id="dialogue-area">
+    <div>
+      <div id="speaker" class="speaker-name">相棒 シノ</div>
+      <div id="text" class="dialogue-text">気になる場所をタップして調べてみよう。この部屋のどこかに金庫を開ける鍵があるはずだ。</div>
+    </div>
+    <button class="hint-btn" onclick="showHint()">ヒントを聞く</button>
+  </div>
+
+  <!-- 金庫解除モーダル -->
+  <div id="safe-modal">
+    <div class="modal-content">
+      <h3>ダイヤルロック</h3>
+      <p style="font-size: 0.8rem; color: #aaa; margin-top: 5px;">4桁の数字を入力してください</p>
+      <input type="text" id="passcode" class="code-input" maxlength="4" placeholder="0000" inputmode="numeric">
+      <div class="modal-btns">
+        <button class="btn btn-submit" onclick="checkCode()">解除</button>
+        <button class="btn btn-close" onclick="closeModal()">戻る</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ゲームの状態管理
+  const state = {
+    clockInspected: false,
+    booksInspected: false,
+    cleared: false
+  };
+
+  const speakerEl = document.getElementById('speaker');
+  const textEl = document.getElementById('text');
+
+  function setDialogue(speaker, message) {
+    speakerEl.textContent = speaker;
+    textEl.textContent = message;
+  }
+
+  // オブジェクト調査
+  function inspect(type) {
+    if (state.cleared) {
+      setDialogue("相棒 シノ", "無事に事件解決だな！次の事件現場に向かおう。");
+      return;
+    }
+
+    if (type === 'clock') {
+      state.clockInspected = true;
+      setDialogue("相棒 シノ", "「3時」でピタリと止まっている掛け時計だね。\n文字盤の裏に小さく『千の位は止まった時間』と書かれているぞ…？");
+    } else if (type === 'books') {
+      state.booksInspected = true;
+      setDialogue("相棒 シノ", "本棚に『怪異大全』という本がある。\n『百の位は0、十の位は5、一の位は2』と怪しげなメモが挟まっていたよ。");
+    } else if (type === 'safe') {
+      setDialogue("相棒 シノ", "これが噂の金庫か…！4桁の数字で解錠できるみたいだ。入力してみるかい？");
+      document.getElementById('safe-modal').style.style = '';
+      document.getElementById('safe-modal').style.display = 'flex';
+    }
+  }
+
+  // ヒント機能
+  function showHint() {
+    if (state.cleared) {
+      setDialogue("相棒 シノ", "もう金庫は開いたよ。お見事だったね！");
+      return;
+    }
+    if (!state.clockInspected && !state.booksInspected) {
+      setDialogue("相棒 シノ", "まずは『掛け時計』と『本棚』を調べて、数字のヒントを集めよう。");
+    } else if (!state.clockInspected) {
+      setDialogue("相棒 シノ", "『掛け時計』にまだ見ていない手がかりがありそうだ。");
+    } else if (!state.booksInspected) {
+      setDialogue("相棒 シノ", "『本棚』の方もよく調べてみよう。");
+    } else {
+      setDialogue("相棒 シノ", "手がかりは揃った！\n千の位は『時計の時間(3)』、残り三桁は『本棚のメモ(0,5,2)』だ！");
+    }
+  }
+
+  // モーダル操作
+  function closeModal() {
+    document.getElementById('safe-modal').style.display = 'none';
+  }
+
+  // 解錠判定
+  function checkCode() {
+    const input = document.getElementById('passcode').value;
+    if (input === "3052") {
+      state.cleared = true;
+      closeModal();
+      setDialogue("相棒 シノ", "『カチリ…』\nやった！金庫が開いたぞ！中から『封印された秘宝』が出てきた！さすがプロデューサー、素晴らしいナゾ解きだ！");
+    } else {
+      alert("カチャ… 鍵が開かない。番号が違うようだ。");
+    }
+  }
+</script>
+
+</body>
+</html>
