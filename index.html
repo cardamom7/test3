@@ -58,24 +58,24 @@
       transition: background-image 0.5s ease;
     }
 
-    /* 相棒ヒナの立ち絵エリア（特大化） */
+    /* 相棒ヒナの立ち絵エリア（位置を下げ、顔優先に修正） */
     #chara-container {
       position: absolute;
-      bottom: 0px;
-      right: -20px;
-      width: 340px;
-      height: 580px; /* 大幅に拡大して全身を見せる */
+      bottom: -130px; /* 下半身をダイアログの裏へ沈める */
+      right: -10px;
+      width: 360px;
+      height: 600px; /* 全身が入るよう高さを確保 */
       pointer-events: none;
       z-index: 3;
       display: flex;
-      align-items: flex-end;
+      align-items: flex-start; /* 画像を上（顔）基準に揃える */
       justify-content: center;
     }
     .chara-img {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      object-position: bottom center;
+      object-position: top center; /* 顔が切れないように上から描画 */
       transition: all 0.3s ease;
       opacity: 0.4;
       filter: brightness(0.5);
@@ -106,14 +106,14 @@
     }
     .inspect-obj:active { transform: scale(0.95); background: rgba(230, 198, 105, 0.4); }
 
-    /* ダイアログUI（底上げ & タップ進行に対応） */
+    /* ダイアログUI */
     #dialogue-area {
       height: 240px;
       background: rgba(18, 18, 28, 0.65);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
       border-top: 2px solid rgba(90, 75, 124, 0.8);
-      padding: 14px 16px 30px 16px; /* iPhone下部対策で下に30pxの余白を確保 */
+      padding: 14px 16px 30px 16px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -154,7 +154,7 @@
     }
     @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
-    /* 操作ボタンエリア（少し上寄りに配置） */
+    /* 操作ボタンエリア */
     .control-btns { 
       display: flex; 
       justify-content: space-between; 
@@ -179,7 +179,7 @@
     .modal {
       display: flex; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.85); flex-direction: column;
-      justify-content: center; align-items: center; z-index: 10;
+      justify-content: center; align-items: center; z-index: 20;
     }
     .modal-box {
       background: #222233; padding: 20px; border-radius: 12px;
@@ -211,7 +211,7 @@
     <!-- オブジェクト表示エリア -->
     <div id="interactive-objects"></div>
 
-    <!-- 相棒：ヒナの立ち絵（特大表示） -->
+    <!-- 相棒：ヒナの立ち絵 -->
     <div id="chara-container">
       <img id="img-hina" class="chara-img" src="hina.png" alt="ヒナ">
     </div>
@@ -225,7 +225,7 @@
       <div id="tap-hint" class="tap-hint">▼ タップして進む</div>
     </div>
     
-    <!-- 操作ボタン（位置をiPhone向けに上方修正） -->
+    <!-- 操作ボタン -->
     <div id="action-btns-area" class="control-btns">
       <button id="btn-hint" class="btn-action" onclick="showHint()">ヒントを聞く</button>
       <button id="btn-puzzle" class="btn-action" onclick="openPuzzle()">謎に挑む</button>
@@ -239,6 +239,14 @@
       <p style="font-size:0.85rem; color:#ccc;">あなたの名前を入力してください</p>
       <input type="text" id="player-name-input" class="code-input" maxlength="8" value="アオイ">
       <button class="btn-action" style="padding:10px 20px;" onclick="startGame()">調査を開始する</button>
+    </div>
+  </div>
+
+  <!-- タイトル演出画面（名前入力後に表示） -->
+  <div id="title-screen" class="modal" style="display:none; cursor:pointer;" onclick="startPrologue()">
+    <div style="text-align:center;">
+      <h1 style="font-size:2.4rem; color:#e6c669; letter-spacing:4px; text-shadow:0 0 15px rgba(230,198,105,0.5);">黄昏の解律師</h1>
+      <p class="tap-hint" style="font-size:1rem; margin-top:40px;">▼ タップして物語を始める ▼</p>
     </div>
   </div>
 
@@ -269,7 +277,7 @@
 <script>
   // --- ゲーム状態管理 ---
   let playerName = "アオイ";
-  let currentStage = 0; // 0:プロローグ, 1~3:ステージ, 4:エピローグ
+  let currentStage = -1; // -1:初期, 0:プロローグ, 1~3:ステージ, 4:エピローグ
   let storyIndex = 0;
   let selectedColorSequence = [];
 
@@ -327,16 +335,33 @@
     document.getElementById('stage-screen').style.backgroundImage = `url('${filename}')`;
   }
 
-  // --- スタート処理 ---
+  // --- スタート処理（名前入力後、タイトル演出へ） ---
   function startGame() {
     const input = document.getElementById('player-name-input').value.trim();
     if (input) playerName = input;
     
+    // 入力モーダルを消す
     document.getElementById('start-modal').style.display = 'none';
+    
+    // 背景をセットしておく
+    setBgImage(BG_OUTSIDE);
+    
+    // 会話エリアやボタンを一旦隠す（タイトルに集中させる）
+    document.getElementById('speaker-tag').style.opacity = 0;
+    document.getElementById('dialogue-text').textContent = '';
+    document.getElementById('action-btns-area').style.display = 'none';
+    
+    // タイトル演出画面を表示
+    document.getElementById('title-screen').style.display = 'flex';
+  }
+
+  // --- プロローグ開始（タイトルタップ後） ---
+  function startPrologue() {
+    document.getElementById('title-screen').style.display = 'none';
+    document.getElementById('speaker-tag').style.opacity = 1;
+    
     currentStage = 0;
     storyIndex = 0;
-    
-    setBgImage(BG_OUTSIDE);
     advanceStory();
   }
 
@@ -537,18 +562,16 @@
     advanceStory();
   }
 
-  // --- 簡易BGM機能（修正版） ---
+  // --- 簡易BGM機能 ---
   let audioCtx = null;
   let isBgmPlaying = false;
   let bgmInterval = null;
 
   function toggleBGM() {
-    // 初回のみAudioContextを作成
     if (!audioCtx) {
       audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
     
-    // ブラウザのブロック対策：サスペンド状態なら再開する
     if (audioCtx.state === 'suspended') {
       audioCtx.resume();
     }
@@ -565,7 +588,6 @@
         let gain = audioCtx.createGain();
         osc.frequency.value = notes[step % notes.length];
         
-        // 音量を少し上げました (0.03 -> 0.1)
         gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
         
