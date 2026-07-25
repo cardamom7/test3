@@ -35,7 +35,7 @@
     }
     
     header {
-      background: rgba(18, 18, 28, 0.85);
+      background: #12121c;
       padding: 10px 15px;
       display: flex;
       justify-content: space-between;
@@ -61,15 +61,17 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
       z-index: 1;
     }
 
+    /* ステージ画面内の右下に小さめのサイズでヒナを配置 */
     #chara-container {
       position: absolute;
-      bottom: -10px;
-      right: -30px;
-      width: 420px;
-      height: 520px;
+      bottom: 5px;
+      right: 10px;
+      width: 180px;
+      height: 240px;
       pointer-events: none;
       z-index: 3;
     }
@@ -77,7 +79,7 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
-      object-position: right bottom;
+      object-position: bottom right;
       transition: all 0.3s ease;
       opacity: 0.4;
       filter: brightness(0.5);
@@ -85,12 +87,12 @@
     .chara-img.active {
       opacity: 1;
       filter: brightness(1);
-      transform: translateY(-5px);
+      transform: translateY(-3px);
     }
 
     .inspect-obj {
       position: absolute;
-      background: rgba(0, 0, 0, 0.65);
+      background: rgba(0, 0, 0, 0.75);
       border: 2px solid #e6c669;
       border-radius: 8px;
       color: #fff;
@@ -107,14 +109,12 @@
     }
     .inspect-obj:active { transform: scale(0.95); background: rgba(230, 198, 105, 0.4); }
 
+    /* すりガラスを廃止し、不透明ですっきりしたデザインに変更 */
     #dialogue-area {
-      height: 240px;
-      background: rgba(20, 20, 30, 0.35);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border-top: 1px solid rgba(255, 255, 255, 0.25);
-      box-shadow: 0 -5px 20px rgba(0,0,0,0.4);
-      padding: 14px 16px 30px 16px;
+      height: 210px;
+      background: #14141e;
+      border-top: 2px solid #3d3d56;
+      padding: 12px 16px 20px 16px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -133,17 +133,16 @@
       padding: 3px 10px;
       border-radius: 4px;
       display: inline-block;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
-    .speaker-aoi { background: rgba(43, 76, 126, 0.85); color: #a5c9ff; }
-    .speaker-hina { background: rgba(126, 43, 83, 0.85); color: #ffa5d8; }
+    .speaker-aoi { background: #2b4c7e; color: #a5c9ff; }
+    .speaker-hina { background: #7e2b53; color: #ffa5d8; }
     
     .dialogue-text { 
       font-size: 0.95rem; 
-      line-height: 1.5; 
+      line-height: 1.4; 
       color: #fff; 
-      min-height: 3em; 
-      text-shadow: 0 1px 3px rgba(0,0,0,0.9); 
+      min-height: 2.8em; 
     }
 
     .tap-hint {
@@ -152,29 +151,27 @@
       text-align: right;
       margin-top: 2px;
       animation: blink 1.5s infinite;
-      text-shadow: 0 1px 2px #000;
     }
     @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
     .control-btns { 
       display: flex; 
       justify-content: space-between; 
-      gap: 12px; 
-      margin-top: 8px;
+      gap: 10px; 
+      margin-top: 6px;
     }
     .btn-action {
-      background: rgba(61, 61, 86, 0.8); 
+      background: #3d3d56; 
       color: #fff; 
-      border: 1px solid rgba(255,255,255,0.2); 
-      padding: 8px 12px;
+      border: 1px solid #5a4b7c; 
+      padding: 7px 10px;
       border-radius: 6px; 
       font-size: 0.85rem; 
       font-weight: bold;
       cursor: pointer; 
       flex: 1;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
     }
-    .btn-action:active { background: rgba(90, 75, 124, 0.9); transform: scale(0.98); }
+    .btn-action:active { background: #5a4b7c; transform: scale(0.98); }
 
     .modal {
       display: flex; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -208,10 +205,9 @@
 
   <div id="stage-screen">
     <div id="interactive-objects"></div>
-  </div>
-
-  <div id="chara-container">
-    <img id="img-hina" class="chara-img" src="hina1.png" alt="ヒナ">
+    <div id="chara-container">
+      <img id="img-hina" class="chara-img" src="hina1.png" alt="ヒナ">
+    </div>
   </div>
 
   <div id="dialogue-area">
@@ -293,24 +289,24 @@
     1: {
       title: "STAGE 1: 書斎の金庫",
       objs: [
-        { id: "clock", label: "古びた時計", style: "top: 25%; left: 8%; width: 140px; height: 80px;" },
-        { id: "books", label: "整頓された本棚", style: "top: 48%; left: 16%; width: 140px; height: 80px;" }
+        { id: "clock", label: "古びた時計", style: "top: 25%; left: 8%; width: 130px; height: 75px;" },
+        { id: "books", label: "整頓された本棚", style: "top: 50%; left: 15%; width: 130px; height: 75px;" }
       ],
       initDialogue: { speaker: "ヒナ", text: "まずは気になる場所をタップして調べてみよう！" }
     },
     2: {
       title: "STAGE 2: 宝石のオルゴール",
       objs: [
-        { id: "picture", label: "三色の絵画", style: "top: 22%; left: 8%; width: 140px; height: 80px;" },
-        { id: "letter", label: "机の上の手紙", style: "top: 45%; left: 18%; width: 140px; height: 80px;" }
+        { id: "picture", label: "三色の絵画", style: "top: 22%; left: 8%; width: 130px; height: 75px;" },
+        { id: "letter", label: "机の上の手紙", style: "top: 48%; left: 16%; width: 130px; height: 75px;" }
       ],
       initDialogue: { speaker: "PLAYER", text: "次の部屋ね。綺麗なお部屋だけど…あのテーブルのオルゴールが怪しいわ。" }
     },
     3: {
       title: "STAGE 3: 最後の封印扉",
       objs: [
-        { id: "statue", label: "月と太陽の像", style: "top: 20%; left: 12%; width: 140px; height: 80px;" },
-        { id: "stone", label: "刻まれた石碑", style: "top: 50%; left: 10%; width: 140px; height: 80px;" }
+        { id: "statue", label: "月と太陽の像", style: "top: 20%; left: 10%; width: 130px; height: 75px;" },
+        { id: "stone", label: "刻まれた石碑", style: "top: 50%; left: 10%; width: 130px; height: 75px;" }
       ],
       initDialogue: { speaker: "ヒナ", text: "これが最後の扉…！{NAME}、力を合わせて解き明かそう！" }
     }
