@@ -29,7 +29,7 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     }
     header {
-      background: #12121c;
+      background: rgba(18, 18, 28, 0.9);
       padding: 10px 15px;
       display: flex;
       justify-content: space-between;
@@ -43,36 +43,43 @@
       border-radius: 12px; font-size: 0.75rem; cursor: pointer;
     }
 
-    /* ゲーム画面エリア */
+    /* ゲーム画面エリア（背景画像切替用） */
     #stage-screen {
       flex: 1;
       position: relative;
-      background: linear-gradient(to bottom, #2a2238, #151321);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      transition: background-image 0.5s ease;
     }
 
-    /* 相棒ヒナの立ち絵 */
+    /* 相棒ヒナの立ち絵画像 */
     #chara-container {
       position: absolute;
       bottom: 0;
-      right: 15px;
-      width: 130px;
-      height: 200px;
+      right: 10px;
+      width: 160px;
+      height: 250px;
       pointer-events: none;
       z-index: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
     }
-    .chara-avatar {
-      width: 100%;
-      height: 100%;
+    .chara-img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
       transition: all 0.3s ease;
       opacity: 0.4;
       filter: brightness(0.5);
     }
-    .chara-avatar.active {
+    .chara-img.active {
       opacity: 1;
       filter: brightness(1);
       transform: translateY(-5px);
@@ -81,8 +88,8 @@
     /* クリック要素 */
     .inspect-obj {
       position: absolute;
-      background: rgba(230, 198, 105, 0.15);
-      border: 2px dashed #e6c669;
+      background: rgba(0, 0, 0, 0.6);
+      border: 2px solid #e6c669;
       border-radius: 8px;
       color: #fff;
       display: flex;
@@ -92,11 +99,11 @@
       font-size: 0.85rem;
       cursor: pointer;
       text-shadow: 0 1px 3px #000;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
       z-index: 2;
       transition: transform 0.1s, background 0.2s;
     }
-    .inspect-obj:active { transform: scale(0.95); background: rgba(230, 198, 105, 0.3); }
+    .inspect-obj:active { transform: scale(0.95); background: rgba(230, 198, 105, 0.4); }
 
     /* ダイアログUI */
     #dialogue-area {
@@ -146,7 +153,6 @@
     .color-btns { display: flex; gap: 10px; justify-content: center; margin: 15px 0; }
     .btn-color { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
     
-    /* クリア画面特有スタイル */
     .clear-title {
       font-size: 1.8rem; color: #e6c669; font-weight: bold; margin-bottom: 10px;
     }
@@ -165,13 +171,9 @@
     <!-- オブジェクト表示エリア -->
     <div id="interactive-objects"></div>
 
-    <!-- 相棒：ヒナの立ち絵 -->
+    <!-- 相棒：ヒナの立ち絵（画像） -->
     <div id="chara-container">
-      <svg id="img-hina" class="chara-avatar" viewBox="0 0 100 160">
-        <circle cx="50" cy="40" r="25" fill="#c55b8e"/>
-        <rect x="25" y="70" width="50" height="90" rx="10" fill="#7e2b53"/>
-        <text x="50" y="45" font-size="12" fill="#fff" text-anchor="middle">ヒナ</text>
-      </svg>
+      <img id="img-hina" class="chara-img" src="hina.png" alt="ヒナ">
     </div>
   </div>
 
@@ -215,7 +217,7 @@
     <div class="modal-box">
       <div class="clear-title">🎉 おしまい！ 🎉</div>
       <p style="font-size:0.9rem; color:#fff; margin-bottom:15px;">
-        全すべての謎を解き明かし、事件を解決しました！<br>ごプレイありがとうございました！
+        すべての謎を解き明かし、事件を解決しました！<br>ごプレイありがとうございました！
       </p>
       <button class="btn-action" style="padding:10px 20px;" onclick="location.reload()">もう一度最初から遊ぶ</button>
     </div>
@@ -229,15 +231,19 @@
   let storyIndex = 0;
   let selectedColorSequence = [];
 
-  // プロローグ（導入）シナリオ
+  // 画像ファイル定義
+  const BG_OUTSIDE = 'bg-outside.png'; // 洋館の外観
+  const BG_INSIDE  = 'bg-inside.png';  // 洋館の中
+
+  // プロローグシナリオ
   const prologueLines = [
     { speaker: "ヒナ", text: "ついに着いたね！ここが噂の『黄昏の館』かぁ…ちょっと不気味だけどワクワクするね！" },
     { speaker: "PLAYER", text: "油断しないでね、ヒナ。この館には強力な仕掛けが施されているって噂よ。" },
     { speaker: "ヒナ", text: "ふふん、大丈夫！私には優秀な相棒の{NAME}がいるもん！ふたりで力を合わせればどんな謎もイチコロだよ！" },
-    { speaker: "PLAYER", text: "頼りにしてるわ。よし、まずは目の前の書斎から調べてみましょう！" }
+    { speaker: "PLAYER", text: "頼りにしてるわ。よし、まずは洋館の中に入りましょう！" }
   ];
 
-  // エピローグ（クリア後の小話）シナリオ
+  // エピローグシナリオ
   const epilogueLines = [
     { speaker: "ヒナ", text: "{NAME}！大きな扉が開いたよ！見て、外には満天の星空が…！" },
     { speaker: "PLAYER", text: "ええ、本当に綺麗ね。…ヒナが隣にいてくれたから、最後まで解き明かせたわ。ありがとう。" },
@@ -274,6 +280,11 @@
     }
   };
 
+  // 背景画像のセット関数
+  function setBgImage(filename) {
+    document.getElementById('stage-screen').style.backgroundImage = `url('${filename}')`;
+  }
+
   // --- スタート処理 ---
   function startGame() {
     const input = document.getElementById('player-name-input').value.trim();
@@ -283,7 +294,9 @@
     currentStage = 0;
     storyIndex = 0;
     
-    // UI制御：会話進行ボタンのみ表示
+    // プロローグは外観背景
+    setBgImage(BG_OUTSIDE);
+
     document.getElementById('btn-next').style.display = 'block';
     document.getElementById('btn-hint').style.display = 'none';
     document.getElementById('btn-puzzle').style.display = 'none';
@@ -291,7 +304,7 @@
     advanceStory();
   }
 
-  // --- ストーリー（プロローグ・エピローグ）進行 ---
+  // --- ストーリー進行 ---
   function advanceStory() {
     let lines = currentStage === 0 ? prologueLines : epilogueLines;
     
@@ -302,12 +315,9 @@
       setDialogue(spk, txt);
       storyIndex++;
     } else {
-      // ストーリー終了後の分岐
       if (currentStage === 0) {
-        // プロローグ終了 ➔ STAGE 1へ
         loadStage(1);
       } else {
-        // エピローグ（小話）終了 ➔ 「おしまい！」画面へ
         document.getElementById('clear-modal').style.display = 'flex';
       }
     }
@@ -325,7 +335,6 @@
     tag.className = `speaker-tag ${isPlayer ? 'speaker-aoi' : 'speaker-hina'}`;
     textEl.textContent = text;
 
-    // ヒナが喋っている時だけ立ち絵を明るく表示
     if (!isPlayer) {
       hinaImg.classList.add('active');
     } else {
@@ -338,7 +347,9 @@
     currentStage = stageNum;
     selectedColorSequence = [];
 
-    // UI切り替え：調査＆パズルボタン表示
+    // ステージ内（洋館の中）背景に切り替え
+    setBgImage(BG_INSIDE);
+
     document.getElementById('btn-next').style.display = 'none';
     document.getElementById('btn-hint').style.display = 'block';
     document.getElementById('btn-puzzle').style.display = 'block';
@@ -346,7 +357,6 @@
     const data = stages[stageNum];
     document.getElementById('stage-title').textContent = data.title;
 
-    // オブジェクト描画
     const container = document.getElementById('interactive-objects');
     container.innerHTML = '';
     data.objs.forEach((obj, index) => {
@@ -468,14 +478,16 @@
     }
   }
 
-  // --- エピローグ（小話）開始 ---
+  // --- エピローグ開始 ---
   function startEpilogue() {
     currentStage = 4;
     storyIndex = 0;
     document.getElementById('interactive-objects').innerHTML = '';
     document.getElementById('stage-title').textContent = "EPILOGUE: 事件解決";
     
-    // UI切り替え：会話進行ボタンを表示
+    // エピローグで再び外観（夜空）の背景に戻す
+    setBgImage(BG_OUTSIDE);
+
     document.getElementById('btn-next').style.display = 'block';
     document.getElementById('btn-hint').style.display = 'none';
     document.getElementById('btn-puzzle').style.display = 'none';
