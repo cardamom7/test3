@@ -15,11 +15,16 @@
       align-items: center;
       min-height: 100vh;
     }
+    
     #game-container {
       width: 100%;
       max-width: 480px;
       height: 750px;
-      background: #1a1a26;
+      background-color: #1a1a26;
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      transition: background-image 0.5s ease;
       border: 2px solid #5a4b7c;
       border-radius: 12px;
       display: flex;
@@ -28,54 +33,53 @@
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     }
+    
     header {
-      background: rgba(18, 18, 28, 0.9);
+      background: rgba(18, 18, 28, 0.85);
       padding: 10px 15px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid #3d3d56;
-      z-index: 5;
+      z-index: 10;
     }
     header h1 { font-size: 0.95rem; color: #e6c669; letter-spacing: 1px; }
+    
+    /* BGMボタン（ON/OFFで見た目が変わるように変更） */
     .bgm-btn {
-      background: #3d3d56; color: #fff; border: none; padding: 4px 10px;
-      border-radius: 12px; font-size: 0.75rem; cursor: pointer;
+      background: #3d3d56; color: #fff; border: 1px solid #5a4b7c; padding: 5px 12px;
+      border-radius: 12px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s;
+    }
+    .bgm-btn.playing {
+      background: #e6c669; color: #1a1a26; font-weight: bold; border-color: #fff;
+      box-shadow: 0 0 8px rgba(230, 198, 105, 0.6);
     }
 
-    /* ゲーム画面エリア */
     #stage-screen {
       flex: 1;
       position: relative;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
-      transition: background-image 0.5s ease;
+      z-index: 1;
     }
 
-    /* 相棒ヒナの立ち絵エリア（位置を下げ、顔優先に修正） */
+    /* 相棒ヒナの立ち絵：右側に配置しつつ、左側（中央寄り）を大きく画面外へはみ出させて顔をドアップ化 */
     #chara-container {
       position: absolute;
-      bottom: -130px; /* 下半身をダイアログの裏へ沈める */
-      right: -10px;
-      width: 360px;
-      height: 600px; /* 全身が入るよう高さを確保 */
+      bottom: -60px; 
+      right: -100px; /* 右側に配置 */
+      width: 650px;  /* さらに巨大化して顔をアップに */
+      height: 900px;
       pointer-events: none;
-      z-index: 3;
-      display: flex;
-      align-items: flex-start; /* 画像を上（顔）基準に揃える */
-      justify-content: center;
+      z-index: 3;    /* 吹き出し(z-index: 5)の背後に配置 */
     }
     .chara-img {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      object-position: top center; /* 顔が切れないように上から描画 */
+      object-position: 25% 15%; /* 左側の手をあえてフレーム外へ逃がし、顔を大きく映す調整 */
       transition: all 0.3s ease;
       opacity: 0.4;
       filter: brightness(0.5);
@@ -83,10 +87,9 @@
     .chara-img.active {
       opacity: 1;
       filter: brightness(1);
-      transform: translateY(-5px);
+      transform: translateY(-8px);
     }
 
-    /* クリック要素 */
     .inspect-obj {
       position: absolute;
       background: rgba(0, 0, 0, 0.65);
@@ -106,13 +109,14 @@
     }
     .inspect-obj:active { transform: scale(0.95); background: rgba(230, 198, 105, 0.4); }
 
-    /* ダイアログUI */
+    /* ダイアログUI（すりガラス効果：完全に透けるように設定） */
     #dialogue-area {
       height: 240px;
-      background: rgba(18, 18, 28, 0.65);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border-top: 2px solid rgba(90, 75, 124, 0.8);
+      background: rgba(20, 20, 30, 0.35); /* 適度な透明度 */
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-top: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 -5px 20px rgba(0,0,0,0.4);
       padding: 14px 16px 30px 16px;
       display: flex;
       flex-direction: column;
@@ -121,7 +125,6 @@
       position: relative;
     }
     
-    /* タップで会話を進めるテキストクリックエリア */
     #dialogue-click-zone {
       flex: 1;
       cursor: pointer;
@@ -137,12 +140,13 @@
     }
     .speaker-aoi { background: rgba(43, 76, 126, 0.85); color: #a5c9ff; }
     .speaker-hina { background: rgba(126, 43, 83, 0.85); color: #ffa5d8; }
+    
     .dialogue-text { 
-      font-size: 0.92rem; 
+      font-size: 0.95rem; 
       line-height: 1.5; 
-      color: #f0f0f0; 
+      color: #fff; 
       min-height: 3em; 
-      text-shadow: 0 1px 2px #000; 
+      text-shadow: 0 1px 3px rgba(0,0,0,0.9); 
     }
 
     .tap-hint {
@@ -151,10 +155,10 @@
       text-align: right;
       margin-top: 2px;
       animation: blink 1.5s infinite;
+      text-shadow: 0 1px 2px #000;
     }
     @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
 
-    /* 操作ボタンエリア */
     .control-btns { 
       display: flex; 
       justify-content: space-between; 
@@ -162,7 +166,7 @@
       margin-top: 8px;
     }
     .btn-action {
-      background: rgba(61, 61, 86, 0.9); 
+      background: rgba(61, 61, 86, 0.8); 
       color: #fff; 
       border: 1px solid rgba(255,255,255,0.2); 
       padding: 8px 12px;
@@ -175,7 +179,6 @@
     }
     .btn-action:active { background: rgba(90, 75, 124, 0.9); transform: scale(0.98); }
 
-    /* モーダル汎用 */
     .modal {
       display: flex; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.85); flex-direction: column;
@@ -203,21 +206,17 @@
 <div id="game-container">
   <header>
     <h1 id="stage-title">黄昏の解律師</h1>
-    <button class="bgm-btn" onclick="toggleBGM()">🎵 BGM ON/OFF</button>
+    <button id="bgm-btn" class="bgm-btn" onclick="toggleBGM()">🎵 BGM: OFF</button>
   </header>
 
-  <!-- ゲーム画面 -->
   <div id="stage-screen">
-    <!-- オブジェクト表示エリア -->
     <div id="interactive-objects"></div>
-
-    <!-- 相棒：ヒナの立ち絵 -->
-    <div id="chara-container">
-      <img id="img-hina" class="chara-img" src="hina.png" alt="ヒナ">
-    </div>
   </div>
 
-  <!-- ダイアログ（タップ進行対応） -->
+  <div id="chara-container">
+    <img id="img-hina" class="chara-img" src="hina.png" alt="ヒナ">
+  </div>
+
   <div id="dialogue-area">
     <div id="dialogue-click-zone" onclick="handleDialogueTap()">
       <span id="speaker-tag" class="speaker-tag speaker-hina">ヒナ</span>
@@ -225,14 +224,12 @@
       <div id="tap-hint" class="tap-hint">▼ タップして進む</div>
     </div>
     
-    <!-- 操作ボタン -->
     <div id="action-btns-area" class="control-btns">
       <button id="btn-hint" class="btn-action" onclick="showHint()">ヒントを聞く</button>
       <button id="btn-puzzle" class="btn-action" onclick="openPuzzle()">謎に挑む</button>
     </div>
   </div>
 
-  <!-- スタート/名前入力モーダル -->
   <div id="start-modal" class="modal">
     <div class="modal-box">
       <h2 style="color:#e6c669; margin-bottom:10px;">黄昏の解律師</h2>
@@ -242,7 +239,6 @@
     </div>
   </div>
 
-  <!-- タイトル演出画面（名前入力後に表示） -->
   <div id="title-screen" class="modal" style="display:none; cursor:pointer;" onclick="startPrologue()">
     <div style="text-align:center;">
       <h1 style="font-size:2.4rem; color:#e6c669; letter-spacing:4px; text-shadow:0 0 15px rgba(230,198,105,0.5);">黄昏の解律師</h1>
@@ -250,7 +246,6 @@
     </div>
   </div>
 
-  <!-- 謎解き解答用モーダル -->
   <div id="puzzle-modal" class="modal" style="display:none;">
     <div class="modal-box">
       <h3 id="modal-title">鍵の解錠</h3>
@@ -262,7 +257,6 @@
     </div>
   </div>
 
-  <!-- クリア「おしまい！」モーダル -->
   <div id="clear-modal" class="modal" style="display:none;">
     <div class="modal-box">
       <div class="clear-title">🎉 おしまい！ 🎉</div>
@@ -275,25 +269,21 @@
 </div>
 
 <script>
-  // --- ゲーム状態管理 ---
   let playerName = "アオイ";
-  let currentStage = -1; // -1:初期, 0:プロローグ, 1~3:ステージ, 4:エピローグ
+  let currentStage = -1; 
   let storyIndex = 0;
   let selectedColorSequence = [];
 
-  // 画像ファイル定義
-  const BG_OUTSIDE = 'bg-outside.png'; // 洋館の外観
-  const BG_INSIDE  = 'bg-inside.png';  // 洋館の中
+  const BG_OUTSIDE = 'bg-outside.png'; 
+  const BG_INSIDE  = 'bg-inside.png';  
 
-  // プロローグシナリオ
   const prologueLines = [
-    { speaker: "ヒナ", text: "ついに着いたね！ここが噂の『黄昏の館』かぁ…ちょっと不気味だけどワクワクするね〜！" },
-    { speaker: "PLAYER", text: "油断しないでね、ヒナ。この館には強力な仕掛けが施されているって噂らしいから。" },
-    { speaker: "ヒナ", text: "ふふ〜ん、大丈夫！私には優秀な相棒の{NAME}がいるもん！ふたりで力を合わせればどんな謎もイチコロだよ！" },
+    { speaker: "ヒナ", text: "ついに着いたね！ここが噂の『黄昏の館』かぁ…ちょっと不気味だけどワクワクするね！" },
+    { speaker: "PLAYER", text: "油断しないでね、ヒナ。この館には強力な仕掛けが施されているって噂よ。" },
+    { speaker: "ヒナ", text: "ふふん、大丈夫！私には優秀な相棒の{NAME}がいるもん！ふたりで力を合わせればどんな謎もイチコロだよ！" },
     { speaker: "PLAYER", text: "頼りにしてるわ。よし、まずは洋館の中に入りましょう！" }
   ];
 
-  // エピローグシナリオ
   const epilogueLines = [
     { speaker: "ヒナ", text: "{NAME}！大きな扉が開いたよ！見て、外には満天の星空が…！" },
     { speaker: "PLAYER", text: "ええ、本当に綺麗ね。…ヒナが隣にいてくれたから、最後まで解き明かせたわ。ありがとう。" },
@@ -302,77 +292,63 @@
     { speaker: "ヒナ", text: "やった〜〜！{NAME}のおごりで特大パフェね！約束だよ〜！" }
   ];
 
-  // ステージ定義
   const stages = {
     1: {
       title: "STAGE 1: 書斎の金庫",
       objs: [
-        { id: "clock", label: "古びた時計", style: "top: 15%; left: 10%; width: 130px; height: 100px;" },
-        { id: "books", label: "整頓された本棚", style: "top: 15%; right: 10%; width: 130px; height: 100px;" }
+        { id: "clock", label: "古びた時計", style: "top: 25%; left: 8%; width: 140px; height: 80px;" },
+        { id: "books", label: "整頓された本棚", style: "top: 48%; left: 16%; width: 140px; height: 80px;" }
       ],
       initDialogue: { speaker: "ヒナ", text: "まずは気になる場所をタップして調べてみよう！" }
     },
     2: {
       title: "STAGE 2: 宝石のオルゴール",
       objs: [
-        { id: "picture", label: "三色の絵画", style: "top: 15%; left: 10%; width: 130px; height: 100px;" },
-        { id: "letter", label: "机の上の手紙", style: "top: 15%; right: 10%; width: 130px; height: 100px;" }
+        { id: "picture", label: "三色の絵画", style: "top: 22%; left: 8%; width: 140px; height: 80px;" },
+        { id: "letter", label: "机の上の手紙", style: "top: 45%; left: 18%; width: 140px; height: 80px;" }
       ],
       initDialogue: { speaker: "PLAYER", text: "次の部屋ね。綺麗なお部屋だけど…あのテーブルのオルゴールが怪しいわ。" }
     },
     3: {
       title: "STAGE 3: 最後の封印扉",
       objs: [
-        { id: "statue", label: "月と太陽の像", style: "top: 15%; left: 10%; width: 130px; height: 100px;" },
-        { id: "stone", label: "刻まれた石碑", style: "top: 15%; right: 10%; width: 130px; height: 100px;" }
+        { id: "statue", label: "月と太陽の像", style: "top: 20%; left: 12%; width: 140px; height: 80px;" },
+        { id: "stone", label: "刻まれた石碑", style: "top: 50%; left: 10%; width: 140px; height: 80px;" }
       ],
       initDialogue: { speaker: "ヒナ", text: "これが最後の扉…！{NAME}、力を合わせて解き明かそう！" }
     }
   };
 
-  // 背景画像のセット関数
   function setBgImage(filename) {
-    document.getElementById('stage-screen').style.backgroundImage = `url('${filename}')`;
+    document.getElementById('game-container').style.backgroundImage = `url('${filename}')`;
   }
 
-  // --- スタート処理（名前入力後、タイトル演出へ） ---
   function startGame() {
     const input = document.getElementById('player-name-input').value.trim();
     if (input) playerName = input;
     
-    // 入力モーダルを消す
     document.getElementById('start-modal').style.display = 'none';
-    
-    // 背景をセットしておく
     setBgImage(BG_OUTSIDE);
     
-    // 会話エリアやボタンを一旦隠す（タイトルに集中させる）
     document.getElementById('speaker-tag').style.opacity = 0;
     document.getElementById('dialogue-text').textContent = '';
     document.getElementById('action-btns-area').style.display = 'none';
     
-    // タイトル演出画面を表示
     document.getElementById('title-screen').style.display = 'flex';
   }
 
-  // --- プロローグ開始（タイトルタップ後） ---
   function startPrologue() {
     document.getElementById('title-screen').style.display = 'none';
     document.getElementById('speaker-tag').style.opacity = 1;
-    
     currentStage = 0;
     storyIndex = 0;
     advanceStory();
   }
 
-  // --- 吹き出しタップ時の処理 ---
   function handleDialogueTap() {
-    if (currentStage === 0 || currentStage === 4) {
-      advanceStory();
-    }
+    if (currentStage === 0 || currentStage === 4) advanceStory();
   }
 
-  // --- ストーリー進行 ---
   function advanceStory() {
     let lines = currentStage === 0 ? prologueLines : epilogueLines;
     
@@ -383,15 +359,11 @@
       setDialogue(spk, txt);
       storyIndex++;
     } else {
-      if (currentStage === 0) {
-        loadStage(1);
-      } else {
-        document.getElementById('clear-modal').style.display = 'flex';
-      }
+      if (currentStage === 0) loadStage(1);
+      else document.getElementById('clear-modal').style.display = 'flex';
     }
   }
 
-  // --- ダイアログ更新 ---
   function setDialogue(speaker, text) {
     const tag = document.getElementById('speaker-tag');
     const textEl = document.getElementById('dialogue-text');
@@ -404,26 +376,18 @@
     tag.className = `speaker-tag ${isPlayer ? 'speaker-aoi' : 'speaker-hina'}`;
     textEl.textContent = text;
 
-    if (currentStage === 0 || currentStage === 4) {
-      tapHint.style.display = 'block';
-    } else {
-      tapHint.style.display = 'none';
-    }
+    if (currentStage === 0 || currentStage === 4) tapHint.style.display = 'block';
+    else tapHint.style.display = 'none';
 
-    if (!isPlayer) {
-      hinaImg.classList.add('active');
-    } else {
-      hinaImg.classList.remove('active');
-    }
+    if (!isPlayer) hinaImg.classList.add('active');
+    else hinaImg.classList.remove('active');
   }
 
-  // --- ステージロード ---
   function loadStage(stageNum) {
     currentStage = stageNum;
     selectedColorSequence = [];
 
     setBgImage(BG_INSIDE);
-
     document.getElementById('action-btns-area').style.display = 'flex';
 
     const data = stages[stageNum];
@@ -445,67 +409,42 @@
     setDialogue(spk, txt);
   }
 
-  // --- オブジェクト調べ ---
   function inspectObject(num, id) {
     if (currentStage === 1) {
-      if (id === 'clock') {
-        setDialogue(playerName, "「3時」で止まっている時計ね。裏側に『千の位は止まった刻』と刻まれているわ。");
-      } else {
-        setDialogue("ヒナ", "本棚からメモを発見！『百の位は0、十の位は5、一の位は2』だって！");
-      }
+      if (id === 'clock') setDialogue(playerName, "「3時」で止まっている時計ね。裏側に『千の位は止まった刻』と刻まれているわ。");
+      else setDialogue("ヒナ", "本棚からメモを発見！『百の位は0、十の位は5、一の位は2』だって！");
     } else if (currentStage === 2) {
-      if (id === 'picture') {
-        setDialogue("ヒナ", "綺麗な絵画！『赤・青・黄』のチューリップが描かれてるね。");
-      } else {
-        setDialogue(playerName, "手紙には『情熱（赤）で始まり、空（青）を見上げ、光（黄）に至る』と書いてあるわ。");
-      }
+      if (id === 'picture') setDialogue("ヒナ", "綺麗な絵画！『赤・青・黄』のチューリップが描かれてるね。");
+      else setDialogue(playerName, "手紙には『情熱（赤）で始まり、空（青）を見上げ、光（黄）に至る』と書いてあるわ。");
     } else if (currentStage === 3) {
-      if (id === 'statue') {
-        setDialogue(playerName, "像の台座に『夜を照らす真実の言葉（英字4文字）を刻め』とあるわね。");
-      } else {
-        setDialogue("ヒナ", "石碑の文字だ！『Mで始まり、Nで終わる。夜空に浮かぶ丸いもの…』何だろう？");
-      }
+      if (id === 'statue') setDialogue(playerName, "像の台座に『夜を照らす真実の言葉（英字4文字）を刻め』とあるわね。");
+      else setDialogue("ヒナ", "石碑の文字だ！『Mで始まり、Nで終わる。夜空に浮かぶ丸いもの…』何だろう？");
     }
   }
 
-  // --- ヒント ---
   function showHint() {
-    if (currentStage === 1) {
-      setDialogue("ヒナ", "時計の数字(3)と、本のメモ(052)を繋げると4桁の番号になるはずだよ！");
-    } else if (currentStage === 2) {
-      setDialogue(playerName, "手紙の文章が示す色の順番（情熱→空→光）を試してみましょう。");
-    } else if (currentStage === 3) {
-      setDialogue("ヒナ", "「Mから始まってNで終わる、夜空の丸いもの」…月（つき）を英語で言うと何だっけ？");
-    }
+    if (currentStage === 1) setDialogue("ヒナ", "時計の数字(3)と、本のメモ(052)を繋げると4桁の番号になるはずだよ！");
+    else if (currentStage === 2) setDialogue(playerName, "手紙の文章が示す色の順番（情熱→空→光）を試してみましょう。");
+    else if (currentStage === 3) setDialogue("ヒナ", "「Mから始まってNで終わる、夜空の丸いもの」…月（つき）を英語で言うと何だっけ？");
   }
 
-  // --- 謎解きモーダル表示 ---
   function openPuzzle() {
     const modal = document.getElementById('puzzle-modal');
     const body = document.getElementById('modal-body');
     modal.style.display = 'flex';
 
     if (currentStage === 1) {
-      body.innerHTML = `
-        <p style="font-size:0.8rem; color:#aaa;">4桁の数字を入力してください</p>
-        <input type="text" id="ans-input" class="code-input" maxlength="4" placeholder="0000" inputmode="numeric">
-      `;
+      body.innerHTML = `<p style="font-size:0.8rem; color:#aaa;">4桁の数字を入力してください</p><input type="text" id="ans-input" class="code-input" maxlength="4" placeholder="0000" inputmode="numeric">`;
     } else if (currentStage === 2) {
       selectedColorSequence = [];
-      body.innerHTML = `
-        <p style="font-size:0.8rem; color:#aaa;">正しい順番で色ボタンを押してください</p>
+      body.innerHTML = `<p style="font-size:0.8rem; color:#aaa;">正しい順番で色ボタンを押してください</p>
         <div class="color-btns">
           <button class="btn-color" style="background:#e74c3c" onclick="pressColor('赤')"></button>
           <button class="btn-color" style="background:#3498db" onclick="pressColor('青')"></button>
           <button class="btn-color" style="background:#f1c40f" onclick="pressColor('黄')"></button>
-        </div>
-        <div id="color-log" style="color:#e6c669; font-weight:bold; height:1.5em;"></div>
-      `;
+        </div><div id="color-log" style="color:#e6c669; font-weight:bold; height:1.5em;"></div>`;
     } else if (currentStage === 3) {
-      body.innerHTML = `
-        <p style="font-size:0.8rem; color:#aaa;">英単語4文字（大文字）を入力してください</p>
-        <input type="text" id="ans-input" class="code-input" maxlength="4" placeholder="WORD" style="text-transform:uppercase;">
-      `;
+      body.innerHTML = `<p style="font-size:0.8rem; color:#aaa;">英単語4文字（大文字）を入力してください</p><input type="text" id="ans-input" class="code-input" maxlength="4" placeholder="WORD" style="text-transform:uppercase;">`;
     }
   }
 
@@ -514,21 +453,15 @@
     document.getElementById('color-log').textContent = selectedColorSequence.join(" ➔ ");
   }
 
-  function closeModal() {
-    document.getElementById('puzzle-modal').style.display = 'none';
-  }
+  function closeModal() { document.getElementById('puzzle-modal').style.display = 'none'; }
 
-  // --- 回答判定 ---
   function submitAnswer() {
     if (currentStage === 1) {
-      const val = document.getElementById('ans-input').value;
-      if (val === '3052') {
+      if (document.getElementById('ans-input').value === '3052') {
         closeModal();
         setDialogue(playerName, "見事ね！金庫が開いて『台座の鍵』を手に入れたわ。次の部屋へ行きましょう！");
         setTimeout(() => loadStage(2), 2500);
-      } else {
-        alert("番号が違うようだ…");
-      }
+      } else alert("番号が違うようだ…");
     } else if (currentStage === 2) {
       if (selectedColorSequence.join(",") === "赤,青,黄") {
         closeModal();
@@ -536,66 +469,54 @@
         setTimeout(() => loadStage(3), 2500);
       } else {
         alert("音が響かない… 順番が違うようだ。");
-        selectedColorSequence = [];
-        document.getElementById('color-log').textContent = '';
+        selectedColorSequence = []; document.getElementById('color-log').textContent = '';
       }
     } else if (currentStage === 3) {
-      const val = document.getElementById('ans-input').value.toUpperCase();
-      if (val === 'MOON') {
-        closeModal();
-        startEpilogue();
-      } else {
-        alert("扉はびくともしない…");
-      }
+      if (document.getElementById('ans-input').value.toUpperCase() === 'MOON') {
+        closeModal(); startEpilogue();
+      } else alert("扉はびくともしない…");
     }
   }
 
-  // --- エピローグ開始 ---
   function startEpilogue() {
-    currentStage = 4;
-    storyIndex = 0;
+    currentStage = 4; storyIndex = 0;
     document.getElementById('interactive-objects').innerHTML = '';
     document.getElementById('stage-title').textContent = "EPILOGUE: 事件解決";
     document.getElementById('action-btns-area').style.display = 'none';
-    
     setBgImage(BG_OUTSIDE);
     advanceStory();
   }
 
-  // --- 簡易BGM機能 ---
   let audioCtx = null;
   let isBgmPlaying = false;
   let bgmInterval = null;
 
   function toggleBGM() {
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume();
-    }
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+
+    const btn = document.getElementById('bgm-btn');
 
     if (isBgmPlaying) {
       clearInterval(bgmInterval);
       isBgmPlaying = false;
+      btn.textContent = "🎵 BGM: OFF";
+      btn.classList.remove('playing');
     } else {
       isBgmPlaying = true;
+      btn.textContent = "🎶 BGM: ON";
+      btn.classList.add('playing');
+
       let notes = [261.63, 329.63, 392.00, 493.88];
       let step = 0;
       bgmInterval = setInterval(() => {
         let osc = audioCtx.createOscillator();
         let gain = audioCtx.createGain();
         osc.frequency.value = notes[step % notes.length];
-        
         gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
-        
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.8);
+        osc.connect(gain); gain.connect(audioCtx.destination);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.8);
         step++;
       }, 600);
     }
