@@ -55,7 +55,7 @@
       overflow: hidden;
     }
 
-    /* 相棒ヒナの立ち絵（右下に配置） */
+    /* 相棒ヒナの立ち絵 */
     #chara-container {
       position: absolute;
       bottom: 0;
@@ -78,7 +78,7 @@
       transform: translateY(-5px);
     }
 
-    /* クリック要素（上部〜中央に配置してキャラと被らせない） */
+    /* クリック要素 */
     .inspect-obj {
       position: absolute;
       background: rgba(230, 198, 105, 0.15);
@@ -128,9 +128,9 @@
     }
     .btn-action:hover { background: #5a4b7c; }
 
-    /* モーダル */
+    /* モーダル汎用 */
     .modal {
-      display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(0,0,0,0.85); flex-direction: column;
       justify-content: center; align-items: center; z-index: 10;
     }
@@ -139,28 +139,33 @@
       border: 1px solid #e6c669; text-align: center; width: 85%;
     }
     .code-input {
-      width: 100%; font-size: 1.5rem; letter-spacing: 6px; text-align: center;
+      width: 100%; font-size: 1.2rem; text-align: center;
       padding: 8px; margin: 15px 0; background: #12121c; color: #e6c669;
       border: 1px solid #5a4b7c; border-radius: 6px;
     }
     .color-btns { display: flex; gap: 10px; justify-content: center; margin: 15px 0; }
     .btn-color { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
+    
+    /* クリア画面特有スタイル */
+    .clear-title {
+      font-size: 1.8rem; color: #e6c669; font-weight: bold; margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
 
 <div id="game-container">
   <header>
-    <h1 id="stage-title">STAGE 1: 書斎の金庫</h1>
+    <h1 id="stage-title">黄昏の解律師</h1>
     <button class="bgm-btn" onclick="toggleBGM()">🎵 BGM ON/OFF</button>
   </header>
 
   <!-- ゲーム画面 -->
   <div id="stage-screen">
-    <!-- オブジェクト表示エリア (JSで動的生成) -->
+    <!-- オブジェクト表示エリア -->
     <div id="interactive-objects"></div>
 
-    <!-- 相棒：ヒナの立ち絵（右下に配置） -->
+    <!-- 相棒：ヒナの立ち絵 -->
     <div id="chara-container">
       <svg id="img-hina" class="chara-avatar" viewBox="0 0 100 160">
         <circle cx="50" cy="40" r="25" fill="#c55b8e"/>
@@ -174,16 +179,27 @@
   <div id="dialogue-area">
     <div>
       <span id="speaker-tag" class="speaker-tag speaker-hina">ヒナ</span>
-      <div id="dialogue-text" class="dialogue-text">気になる場所を調べてみよ！</div>
+      <div id="dialogue-text" class="dialogue-text">ようこそ！</div>
     </div>
-    <div class="control-btns">
-      <button class="btn-action" onclick="showHint()">ヒントを聞く</button>
-      <button class="btn-action" onclick="openPuzzle()">謎に挑む</button>
+    <div id="action-btns-area" class="control-btns">
+      <button id="btn-next" class="btn-action" onclick="advanceStory()" style="display:none;">次へ進む ➔</button>
+      <button id="btn-hint" class="btn-action" onclick="showHint()">ヒントを聞く</button>
+      <button id="btn-puzzle" class="btn-action" onclick="openPuzzle()">謎に挑む</button>
     </div>
   </div>
 
-  <!-- 解答用モーダル -->
-  <div id="puzzle-modal" class="modal">
+  <!-- スタート/名前入力モーダル -->
+  <div id="start-modal" class="modal">
+    <div class="modal-box">
+      <h2 style="color:#e6c669; margin-bottom:10px;">黄昏の解律師</h2>
+      <p style="font-size:0.85rem; color:#ccc;">あなたの名前（主人公）を入力してください</p>
+      <input type="text" id="player-name-input" class="code-input" maxlength="8" value="アオイ">
+      <button class="btn-action" style="padding:10px 20px;" onclick="startGame()">調査を開始する</button>
+    </div>
+  </div>
+
+  <!-- 謎解き解答用モーダル -->
+  <div id="puzzle-modal" class="modal" style="display:none;">
     <div class="modal-box">
       <h3 id="modal-title">鍵の解錠</h3>
       <div id="modal-body"></div>
@@ -193,15 +209,44 @@
       </div>
     </div>
   </div>
+
+  <!-- クリア「おしまい！」モーダル -->
+  <div id="clear-modal" class="modal" style="display:none;">
+    <div class="modal-box">
+      <div class="clear-title">🎉 おしまい！ 🎉</div>
+      <p style="font-size:0.9rem; color:#fff; margin-bottom:15px;">
+        全すべての謎を解き明かし、事件を解決しました！<br>ごプレイありがとうございました！
+      </p>
+      <button class="btn-action" style="padding:10px 20px;" onclick="location.reload()">もう一度最初から遊ぶ</button>
+    </div>
+  </div>
 </div>
 
 <script>
   // --- ゲーム状態管理 ---
-  let currentStage = 1;
-  let stageState = { inspected1: false, inspected2: false };
+  let playerName = "アオイ";
+  let currentStage = 0; // 0:プロローグ, 1~3:ステージ, 4:エピローグ(小話)
+  let storyIndex = 0;
   let selectedColorSequence = [];
 
-  // ステージ定義（調査オブジェクトは上部〜中央エリアに配置）
+  // プロローグ（導入）シナリオ
+  const prologueLines = [
+    { speaker: "ヒナ", text: "ついに着いたね！ここが噂の『黄昏の館』かぁ…ちょっと不気味だけどワクワクするね！" },
+    { speaker: "PLAYER", text: "油断しないでね、ヒナ。この館には強力な仕掛けが施されているって噂よ。" },
+    { speaker: "ヒナ", text: "ふふん、大丈夫！私には優秀な相棒の{NAME}がいるもん！ふたりで力を合わせればどんな謎もイチコロだよ！" },
+    { speaker: "PLAYER", text: "頼りにしてるわ。よし、まずは目の前の書斎から調べてみましょう！" }
+  ];
+
+  // エピローグ（クリア後の小話）シナリオ
+  const epilogueLines = [
+    { speaker: "ヒナ", text: "{NAME}！大きな扉が開いたよ！見て、外には満天の星空が…！" },
+    { speaker: "PLAYER", text: "ええ、本当に綺麗ね。…ヒナが隣にいてくれたから、最後まで解き明かせたわ。ありがとう。" },
+    { speaker: "ヒナ", text: "へへっ、{NAME}にそう言われると照れちゃうな。最高の相棒と一緒に謎を解けて楽しかった！" },
+    { speaker: "PLAYER", text: "ふふ、私もよ。さて、事件も解決したことだし…帰りに街のカフェでパフェでも食べていきましょうか？" },
+    { speaker: "ヒナ", text: "やった〜〜！{NAME}のおごりで特大パフェね！約束だよ〜！" }
+  ];
+
+  // ステージ定義
   const stages = {
     1: {
       title: "STAGE 1: 書斎の金庫",
@@ -209,7 +254,7 @@
         { id: "clock", label: "古びた時計", style: "top: 15%; left: 10%; width: 130px; height: 100px;" },
         { id: "books", label: "整頓された本棚", style: "top: 15%; right: 10%; width: 130px; height: 100px;" }
       ],
-      initDialogue: { speaker: "ヒナ", text: "アオイ、ここが最初の部屋だね！まずは怪しい場所を調べてみようよ。" }
+      initDialogue: { speaker: "ヒナ", text: "まずは気になる場所をタップして調べてみよう！" }
     },
     2: {
       title: "STAGE 2: 宝石のオルゴール",
@@ -217,7 +262,7 @@
         { id: "picture", label: "三色の絵画", style: "top: 15%; left: 10%; width: 130px; height: 100px;" },
         { id: "letter", label: "机の上の手紙", style: "top: 15%; right: 10%; width: 130px; height: 100px;" }
       ],
-      initDialogue: { speaker: "アオイ", text: "ふう、次の部屋ね。綺麗なお部屋だけど…あのテーブルのオルゴールが怪しいわ。" }
+      initDialogue: { speaker: "PLAYER", text: "次の部屋ね。綺麗なお部屋だけど…あのテーブルのオルゴールが怪しいわ。" }
     },
     3: {
       title: "STAGE 3: 最後の封印扉",
@@ -225,9 +270,48 @@
         { id: "statue", label: "月と太陽の像", style: "top: 15%; left: 10%; width: 130px; height: 100px;" },
         { id: "stone", label: "刻まれた石碑", style: "top: 15%; right: 10%; width: 130px; height: 100px;" }
       ],
-      initDialogue: { speaker: "ヒナ", text: "これが最後の扉…！重厚な空気だね。アオイ、力を合わせて解き明かそう！" }
+      initDialogue: { speaker: "ヒナ", text: "これが最後の扉…！{NAME}、力を合わせて解き明かそう！" }
     }
   };
+
+  // --- スタート処理 ---
+  function startGame() {
+    const input = document.getElementById('player-name-input').value.trim();
+    if (input) playerName = input;
+    
+    document.getElementById('start-modal').style.display = 'none';
+    currentStage = 0;
+    storyIndex = 0;
+    
+    // UI制御：会話進行ボタンのみ表示
+    document.getElementById('btn-next').style.display = 'block';
+    document.getElementById('btn-hint').style.display = 'none';
+    document.getElementById('btn-puzzle').style.display = 'none';
+    
+    advanceStory();
+  }
+
+  // --- ストーリー（プロローグ・エピローグ）進行 ---
+  function advanceStory() {
+    let lines = currentStage === 0 ? prologueLines : epilogueLines;
+    
+    if (storyIndex < lines.length) {
+      let line = lines[storyIndex];
+      let spk = line.speaker === "PLAYER" ? playerName : line.speaker;
+      let txt = line.text.replace(/{NAME}/g, playerName);
+      setDialogue(spk, txt);
+      storyIndex++;
+    } else {
+      // ストーリー終了後の分岐
+      if (currentStage === 0) {
+        // プロローグ終了 ➔ STAGE 1へ
+        loadStage(1);
+      } else {
+        // エピローグ（小話）終了 ➔ 「おしまい！」画面へ
+        document.getElementById('clear-modal').style.display = 'flex';
+      }
+    }
+  }
 
   // --- ダイアログ更新 ---
   function setDialogue(speaker, text) {
@@ -235,12 +319,14 @@
     const textEl = document.getElementById('dialogue-text');
     const hinaImg = document.getElementById('img-hina');
 
-    tag.textContent = speaker === 'アオイ' ? '主人公 アオイ' : '相棒 ヒナ';
-    tag.className = `speaker-tag ${speaker === 'アオイ' ? 'speaker-aoi' : 'speaker-hina'}`;
+    const isPlayer = (speaker === playerName || speaker === "主人公");
+    
+    tag.textContent = isPlayer ? `主人公 ${playerName}` : '相棒 ヒナ';
+    tag.className = `speaker-tag ${isPlayer ? 'speaker-aoi' : 'speaker-hina'}`;
     textEl.textContent = text;
 
-    // ヒナが発言しているときだけ立ち絵をアクティブ（明るく）にする
-    if (speaker === 'ヒナ') {
+    // ヒナが喋っている時だけ立ち絵を明るく表示
+    if (!isPlayer) {
       hinaImg.classList.add('active');
     } else {
       hinaImg.classList.remove('active');
@@ -250,8 +336,12 @@
   // --- ステージロード ---
   function loadStage(stageNum) {
     currentStage = stageNum;
-    stageState = { inspected1: false, inspected2: false };
     selectedColorSequence = [];
+
+    // UI切り替え：調査＆パズルボタン表示
+    document.getElementById('btn-next').style.display = 'none';
+    document.getElementById('btn-hint').style.display = 'block';
+    document.getElementById('btn-puzzle').style.display = 'block';
 
     const data = stages[stageNum];
     document.getElementById('stage-title').textContent = data.title;
@@ -268,16 +358,16 @@
       container.appendChild(el);
     });
 
-    setDialogue(data.initDialogue.speaker, data.initDialogue.text);
+    let spk = data.initDialogue.speaker === "PLAYER" ? playerName : data.initDialogue.speaker;
+    let txt = data.initDialogue.text.replace(/{NAME}/g, playerName);
+    setDialogue(spk, txt);
   }
 
   // --- オブジェクト調べ ---
   function inspectObject(num, id) {
-    stageState[`inspected${num}`] = true;
-
     if (currentStage === 1) {
       if (id === 'clock') {
-        setDialogue("アオイ", "「3時」で止まっている時計ね。裏側に『千の位は止まった刻』と刻まれているわ。");
+        setDialogue(playerName, "「3時」で止まっている時計ね。裏側に『千の位は止まった刻』と刻まれているわ。");
       } else {
         setDialogue("ヒナ", "本棚からメモを発見！『百の位は0、十の位は5、一の位は2』だって！");
       }
@@ -285,11 +375,11 @@
       if (id === 'picture') {
         setDialogue("ヒナ", "綺麗な絵画！『赤・青・黄』のチューリップが描かれてるね。");
       } else {
-        setDialogue("アオイ", "手紙には『情熱（赤）で始まり、空（青）を見上げ、光（黄）に至る』と書いてあるわ。");
+        setDialogue(playerName, "手紙には『情熱（赤）で始まり、空（青）を見上げ、光（黄）に至る』と書いてあるわ。");
       }
     } else if (currentStage === 3) {
       if (id === 'statue') {
-        setDialogue("アオイ", "像の台座に『夜を照らす真実の言葉（英字4文字）を刻め』とあるわね。");
+        setDialogue(playerName, "像の台座に『夜を照らす真実の言葉（英字4文字）を刻め』とあるわね。");
       } else {
         setDialogue("ヒナ", "石碑の文字だ！『Mで始まり、Nで終わる。夜空に浮かぶ丸いもの…』何だろう？");
       }
@@ -301,7 +391,7 @@
     if (currentStage === 1) {
       setDialogue("ヒナ", "時計の数字(3)と、本のメモ(052)を繋げると4桁の番号になるはずだよ！");
     } else if (currentStage === 2) {
-      setDialogue("アオイ", "手紙の文章が示す色の順番（情熱→空→光）を試してみましょう。");
+      setDialogue(playerName, "手紙の文章が示す色の順番（情熱→空→光）を試してみましょう。");
     } else if (currentStage === 3) {
       setDialogue("ヒナ", "「Mから始まってNで終わる、夜空の丸いもの」…月（つき）を英語で言うと何だっけ？");
     }
@@ -316,7 +406,7 @@
     if (currentStage === 1) {
       body.innerHTML = `
         <p style="font-size:0.8rem; color:#aaa;">4桁の数字を入力してください</p>
-        <input type="text" id="ans-input" class="code-input" maxlength="4" placeholder="0000">
+        <input type="text" id="ans-input" class="code-input" maxlength="4" placeholder="0000" inputmode="numeric">
       `;
     } else if (currentStage === 2) {
       selectedColorSequence = [];
@@ -352,7 +442,7 @@
       const val = document.getElementById('ans-input').value;
       if (val === '3052') {
         closeModal();
-        setDialogue("アオイ", "見事ね！金庫が開いて『台座の鍵』を手に入れたわ。次の部屋へ行きましょう！");
+        setDialogue(playerName, "見事ね！金庫が開いて『台座の鍵』を手に入れたわ。次の部屋へ行きましょう！");
         setTimeout(() => loadStage(2), 2500);
       } else {
         alert("番号が違うようだ…");
@@ -371,29 +461,29 @@
       const val = document.getElementById('ans-input').value.toUpperCase();
       if (val === 'MOON') {
         closeModal();
-        gameClear();
+        startEpilogue();
       } else {
         alert("扉はびくともしない…");
       }
     }
   }
 
-  // --- ゲームクリア ---
-  function gameClear() {
+  // --- エピローグ（小話）開始 ---
+  function startEpilogue() {
+    currentStage = 4;
+    storyIndex = 0;
     document.getElementById('interactive-objects').innerHTML = '';
-    setDialogue("ヒナ", "アオイ！大きな扉が開いたよ！見て、外には満天の星空が…！");
-
-    setTimeout(() => {
-      setDialogue("アオイ", "ええ、本当に綺麗ね。…ヒナが隣にいてくれたから、最後まで解き明かせたわ。ありがとう。");
-    }, 3000);
-
-    setTimeout(() => {
-      setDialogue("ヒナ", "へへっ、アオイにそう言われると照れちゃうな。これからも最高の相棒として、よろしくね！");
-      document.getElementById('stage-title').textContent = "🎉 GAME CLEAR! 🎉";
-    }, 6000);
+    document.getElementById('stage-title').textContent = "EPILOGUE: 事件解決";
+    
+    // UI切り替え：会話進行ボタンを表示
+    document.getElementById('btn-next').style.display = 'block';
+    document.getElementById('btn-hint').style.display = 'none';
+    document.getElementById('btn-puzzle').style.display = 'none';
+    
+    advanceStory();
   }
 
-  // --- 簡易BGM機能（Web Audio API） ---
+  // --- 簡易BGM機能 ---
   let audioCtx = null;
   let isBgmPlaying = false;
   let bgmInterval = null;
@@ -422,9 +512,6 @@
       }, 600);
     }
   }
-
-  // 初期ロード
-  loadStage(1);
 </script>
 
 </body>
