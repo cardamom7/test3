@@ -52,36 +52,36 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
 
-    /* キャラクター立ち絵表示エリア */
+    /* 相棒ヒナの立ち絵（右下に配置） */
     #chara-container {
       position: absolute;
       bottom: 0;
-      width: 100%;
-      height: 60%;
-      display: flex;
-      justify-content: space-around;
-      align-items: flex-end;
+      right: 15px;
+      width: 130px;
+      height: 200px;
       pointer-events: none;
+      z-index: 1;
     }
     .chara-avatar {
-      width: 140px;
-      height: 220px;
+      width: 100%;
+      height: 100%;
       transition: all 0.3s ease;
-      opacity: 0.5;
-      filter: brightness(0.6);
+      opacity: 0.4;
+      filter: brightness(0.5);
     }
     .chara-avatar.active {
       opacity: 1;
       filter: brightness(1);
-      transform: scale(1.05);
+      transform: translateY(-5px);
     }
 
-    /* クリック要素 */
+    /* クリック要素（上部〜中央に配置してキャラと被らせない） */
     .inspect-obj {
       position: absolute;
-      background: rgba(230, 198, 105, 0.2);
+      background: rgba(230, 198, 105, 0.15);
       border: 2px dashed #e6c669;
       border-radius: 8px;
       color: #fff;
@@ -94,8 +94,9 @@
       text-shadow: 0 1px 3px #000;
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
       z-index: 2;
+      transition: transform 0.1s, background 0.2s;
     }
-    .inspect-obj:active { transform: scale(0.95); }
+    .inspect-obj:active { transform: scale(0.95); background: rgba(230, 198, 105, 0.3); }
 
     /* ダイアログUI */
     #dialogue-area {
@@ -159,15 +160,8 @@
     <!-- オブジェクト表示エリア (JSで動的生成) -->
     <div id="interactive-objects"></div>
 
-    <!-- 簡易キャラ立ち絵（プレースホルダーSVG） -->
+    <!-- 相棒：ヒナの立ち絵（右下に配置） -->
     <div id="chara-container">
-      <!-- 主人公：アオイ -->
-      <svg id="img-aoi" class="chara-avatar" viewBox="0 0 100 160">
-        <circle cx="50" cy="40" r="25" fill="#4a6fa5"/>
-        <rect x="25" y="70" width="50" height="90" rx="10" fill="#2b4c7e"/>
-        <text x="50" y="45" font-size="12" fill="#fff" text-anchor="middle">アオイ</text>
-      </svg>
-      <!-- 相棒：ヒナ -->
       <svg id="img-hina" class="chara-avatar" viewBox="0 0 100 160">
         <circle cx="50" cy="40" r="25" fill="#c55b8e"/>
         <rect x="25" y="70" width="50" height="90" rx="10" fill="#7e2b53"/>
@@ -207,29 +201,29 @@
   let stageState = { inspected1: false, inspected2: false };
   let selectedColorSequence = [];
 
-  // ステージ定義
+  // ステージ定義（調査オブジェクトは上部〜中央エリアに配置）
   const stages = {
     1: {
       title: "STAGE 1: 書斎の金庫",
       objs: [
-        { id: "clock", label: "古びた時計", style: "top: 15%; left: 15%; width: 100px; height: 100px;" },
-        { id: "books", label: "整頓された本棚", style: "top: 20%; right: 15%; width: 110px; height: 130px;" }
+        { id: "clock", label: "古びた時計", style: "top: 15%; left: 10%; width: 130px; height: 100px;" },
+        { id: "books", label: "整頓された本棚", style: "top: 15%; right: 10%; width: 130px; height: 100px;" }
       ],
       initDialogue: { speaker: "ヒナ", text: "アオイ、ここが最初の部屋だね！まずは怪しい場所を調べてみようよ。" }
     },
     2: {
       title: "STAGE 2: 宝石のオルゴール",
       objs: [
-        { id: "picture", label: "三色の絵画", style: "top: 15%; left: 20%; width: 130px; height: 90px;" },
-        { id: "letter", label: "机の上の手紙", style: "bottom: 30%; right: 20%; width: 100px; height: 80px;" }
+        { id: "picture", label: "三色の絵画", style: "top: 15%; left: 10%; width: 130px; height: 100px;" },
+        { id: "letter", label: "机の上の手紙", style: "top: 15%; right: 10%; width: 130px; height: 100px;" }
       ],
       initDialogue: { speaker: "アオイ", text: "ふう、次の部屋ね。綺麗なお部屋だけど…あのテーブルのオルゴールが怪しいわ。" }
     },
     3: {
       title: "STAGE 3: 最後の封印扉",
       objs: [
-        { id: "statue", label: "月と太陽の像", style: "top: 15%; left: 10%; width: 110px; height: 120px;" },
-        { id: "stone", label: "刻まれた石碑", style: "top: 20%; right: 10%; width: 120px; height: 110px;" }
+        { id: "statue", label: "月と太陽の像", style: "top: 15%; left: 10%; width: 130px; height: 100px;" },
+        { id: "stone", label: "刻まれた石碑", style: "top: 15%; right: 10%; width: 130px; height: 100px;" }
       ],
       initDialogue: { speaker: "ヒナ", text: "これが最後の扉…！重厚な空気だね。アオイ、力を合わせて解き明かそう！" }
     }
@@ -239,19 +233,17 @@
   function setDialogue(speaker, text) {
     const tag = document.getElementById('speaker-tag');
     const textEl = document.getElementById('dialogue-text');
-    const aoiImg = document.getElementById('img-aoi');
     const hinaImg = document.getElementById('img-hina');
 
     tag.textContent = speaker === 'アオイ' ? '主人公 アオイ' : '相棒 ヒナ';
     tag.className = `speaker-tag ${speaker === 'アオイ' ? 'speaker-aoi' : 'speaker-hina'}`;
     textEl.textContent = text;
 
-    if (speaker === 'アオイ') {
-      aoiImg.classList.add('active');
-      hinaImg.classList.remove('active');
-    } else {
+    // ヒナが発言しているときだけ立ち絵をアクティブ（明るく）にする
+    if (speaker === 'ヒナ') {
       hinaImg.classList.add('active');
-      aoiImg.classList.remove('active');
+    } else {
+      hinaImg.classList.remove('active');
     }
   }
 
@@ -401,7 +393,7 @@
     }, 6000);
   }
 
-  // --- 簡易BGM機能（Web Audio API synthesized） ---
+  // --- 簡易BGM機能（Web Audio API） ---
   let audioCtx = null;
   let isBgmPlaying = false;
   let bgmInterval = null;
@@ -414,7 +406,7 @@
       isBgmPlaying = false;
     } else {
       isBgmPlaying = true;
-      let notes = [261.63, 329.63, 392.00, 493.88]; // C, E, G, B
+      let notes = [261.63, 329.63, 392.00, 493.88];
       let step = 0;
       bgmInterval = setInterval(() => {
         let osc = audioCtx.createOscillator();
