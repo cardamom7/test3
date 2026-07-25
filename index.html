@@ -14,12 +14,13 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      padding: 10px;
     }
     
     #game-container {
       width: 100%;
       max-width: 480px;
-      height: 750px;
+      height: 600px; /* 縦幅をコンパクトに修正 */
       background-color: #1a1a26;
       background-size: cover;
       background-position: center;
@@ -36,18 +37,18 @@
     
     header {
       background: #12121c;
-      padding: 10px 15px;
+      padding: 8px 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       border-bottom: 1px solid #3d3d56;
       z-index: 10;
     }
-    header h1 { font-size: 0.95rem; color: #e6c669; letter-spacing: 1px; }
+    header h1 { font-size: 0.9rem; color: #e6c669; letter-spacing: 1px; }
     
     .bgm-btn {
-      background: #3d3d56; color: #fff; border: 1px solid #5a4b7c; padding: 5px 12px;
-      border-radius: 12px; font-size: 0.75rem; cursor: pointer; transition: all 0.2s;
+      background: #3d3d56; color: #fff; border: 1px solid #5a4b7c; padding: 4px 10px;
+      border-radius: 10px; font-size: 0.7rem; cursor: pointer; transition: all 0.2s;
     }
     .bgm-btn.playing {
       background: #e6c669; color: #1a1a26; font-weight: bold; border-color: #fff;
@@ -65,13 +66,13 @@
       z-index: 1;
     }
 
-    /* 右側の余白をなくし、サイズを大きく、ダイアログとの隙間を埋めるように調整 */
+    /* キャラクターの位置とサイズをコンテナに合わせて調整 */
     #chara-container {
       position: absolute;
-      bottom: -15px;
+      bottom: -10px;
       right: 0px;
-      width: 220px;
-      height: 300px;
+      width: 180px;
+      height: 250px;
       pointer-events: none;
       z-index: 6;
     }
@@ -100,7 +101,7 @@
       justify-content: center;
       align-items: center;
       font-weight: bold;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       cursor: pointer;
       text-shadow: 0 1px 3px #000;
       box-shadow: 0 4px 10px rgba(0,0,0,0.5);
@@ -109,11 +110,12 @@
     }
     .inspect-obj:active { transform: scale(0.95); background: rgba(230, 198, 105, 0.4); }
 
+    /* セリフの吹き出し部分（下部エリア）の高さをスリム化 */
     #dialogue-area {
-      height: 210px;
+      height: 145px;
       background: #14141e;
       border-top: 2px solid #3d3d56;
-      padding: 12px 16px 20px 16px;
+      padding: 8px 12px 10px 12px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
@@ -127,28 +129,28 @@
     }
 
     .speaker-tag {
-      font-size: 0.85rem;
+      font-size: 0.75rem;
       font-weight: bold;
-      padding: 3px 10px;
+      padding: 2px 8px;
       border-radius: 4px;
       display: inline-block;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
     .speaker-aoi { background: #2b4c7e; color: #a5c9ff; }
     .speaker-hina { background: #7e2b53; color: #ffa5d8; }
     
     .dialogue-text { 
-      font-size: 0.95rem; 
-      line-height: 1.4; 
+      font-size: 0.85rem; 
+      line-height: 1.35; 
       color: #fff; 
-      min-height: 2.8em; 
+      min-height: 2.2em; 
     }
 
     .tap-hint {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       color: #a0a0c0;
       text-align: right;
-      margin-top: 2px;
+      margin-top: 1px;
       animation: blink 1.5s infinite;
     }
     @keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
@@ -156,16 +158,16 @@
     .control-btns { 
       display: flex; 
       justify-content: space-between; 
-      gap: 10px; 
-      margin-top: 6px;
+      gap: 8px; 
+      margin-top: 4px;
     }
     .btn-action {
       background: #3d3d56; 
       color: #fff; 
       border: 1px solid #5a4b7c; 
-      padding: 7px 10px;
+      padding: 5px 8px;
       border-radius: 6px; 
-      font-size: 0.85rem; 
+      font-size: 0.8rem; 
       font-weight: bold;
       cursor: pointer; 
       flex: 1;
@@ -178,19 +180,19 @@
       justify-content: center; align-items: center; z-index: 20;
     }
     .modal-box {
-      background: #222233; padding: 20px; border-radius: 12px;
+      background: #222233; padding: 15px; border-radius: 12px;
       border: 1px solid #e6c669; text-align: center; width: 85%;
     }
     .code-input {
-      width: 100%; font-size: 1.2rem; text-align: center;
-      padding: 8px; margin: 15px 0; background: #12121c; color: #e6c669;
+      width: 100%; font-size: 1.1rem; text-align: center;
+      padding: 6px; margin: 10px 0; background: #12121c; color: #e6c669;
       border: 1px solid #5a4b7c; border-radius: 6px;
     }
-    .color-btns { display: flex; gap: 10px; justify-content: center; margin: 15px 0; }
-    .btn-color { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
+    .color-btns { display: flex; gap: 10px; justify-content: center; margin: 10px 0; }
+    .btn-color { width: 45px; height: 45px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
     
     .clear-title {
-      font-size: 1.8rem; color: #e6c669; font-weight: bold; margin-bottom: 10px;
+      font-size: 1.5rem; color: #e6c669; font-weight: bold; margin-bottom: 8px;
     }
   </style>
 </head>
@@ -224,25 +226,25 @@
 
   <div id="start-modal" class="modal">
     <div class="modal-box">
-      <h2 style="color:#e6c669; margin-bottom:10px;">黄昏の解律師</h2>
-      <p style="font-size:0.85rem; color:#ccc;">あなたの名前を入力してください</p>
+      <h2 style="color:#e6c669; margin-bottom:8px; font-size:1.2rem;">黄昏の解律師</h2>
+      <p style="font-size:0.8rem; color:#ccc;">あなたの名前を入力してください</p>
       <input type="text" id="player-name-input" class="code-input" maxlength="8" value="アオイ">
-      <button class="btn-action" style="padding:10px 20px;" onclick="startGame()">調査を開始する</button>
+      <button class="btn-action" style="padding:8px 15px;" onclick="startGame()">調査を開始する</button>
     </div>
   </div>
 
   <div id="title-screen" class="modal" style="display:none; cursor:pointer;" onclick="startPrologue()">
     <div style="text-align:center;">
-      <h1 style="font-size:2.4rem; color:#e6c669; letter-spacing:4px; text-shadow:0 0 15px rgba(230,198,105,0.5);">黄昏の解律師</h1>
-      <p class="tap-hint" style="font-size:1rem; margin-top:40px;">▼ タップして物語を始める ▼</p>
+      <h1 style="font-size:2rem; color:#e6c669; letter-spacing:3px; text-shadow:0 0 15px rgba(230,198,105,0.5);">黄昏の解律師</h1>
+      <p class="tap-hint" style="font-size:0.9rem; margin-top:30px;">▼ タップして物語を始める ▼</p>
     </div>
   </div>
 
   <div id="puzzle-modal" class="modal" style="display:none;">
     <div class="modal-box">
-      <h3 id="modal-title">鍵の解錠</h3>
+      <h3 id="modal-title" style="font-size:1rem;">鍵の解錠</h3>
       <div id="modal-body"></div>
-      <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+      <div style="margin-top: 10px; display: flex; gap: 8px; justify-content: center;">
         <button class="btn-action" onclick="submitAnswer()">回答する</button>
         <button class="btn-action" onclick="closeModal()">戻る</button>
       </div>
@@ -252,10 +254,10 @@
   <div id="clear-modal" class="modal" style="display:none;">
     <div class="modal-box">
       <div class="clear-title">🎉 おしまい！ 🎉</div>
-      <p style="font-size:0.9rem; color:#fff; margin-bottom:15px;">
+      <p style="font-size:0.85rem; color:#fff; margin-bottom:12px;">
         すべての謎を解き明かし、事件を解決しました！<br>ごプレイありがとうございました！
       </p>
-      <button class="btn-action" style="padding:10px 20px;" onclick="location.reload()">もう一度最初から遊ぶ</button>
+      <button class="btn-action" style="padding:8px 15px;" onclick="location.reload()">もう一度最初から遊ぶ</button>
     </div>
   </div>
 </div>
@@ -288,24 +290,24 @@
     1: {
       title: "STAGE 1: 書斎の金庫",
       objs: [
-        { id: "clock", label: "古びた時計", style: "top: 25%; left: 8%; width: 130px; height: 75px;" },
-        { id: "books", label: "整頓された本棚", style: "top: 50%; left: 15%; width: 130px; height: 75px;" }
+        { id: "clock", label: "古びた時計", style: "top: 22%; left: 8%; width: 120px; height: 65px;" },
+        { id: "books", label: "整頓された本棚", style: "top: 48%; left: 15%; width: 120px; height: 65px;" }
       ],
       initDialogue: { speaker: "ヒナ", text: "まずは気になる場所をタップして調べてみよう！" }
     },
     2: {
       title: "STAGE 2: 宝石のオルゴール",
       objs: [
-        { id: "picture", label: "三色の絵画", style: "top: 22%; left: 8%; width: 130px; height: 75px;" },
-        { id: "letter", label: "机の上の手紙", style: "top: 48%; left: 16%; width: 130px; height: 75px;" }
+        { id: "picture", label: "三色の絵画", style: "top: 20%; left: 8%; width: 120px; height: 65px;" },
+        { id: "letter", label: "机の上の手紙", style: "top: 46%; left: 16%; width: 120px; height: 65px;" }
       ],
       initDialogue: { speaker: "PLAYER", text: "次の部屋ね。綺麗なお部屋だけど…あのテーブルのオルゴールが怪しいわ。" }
     },
     3: {
       title: "STAGE 3: 最後の封印扉",
       objs: [
-        { id: "statue", label: "月と太陽の像", style: "top: 20%; left: 10%; width: 130px; height: 75px;" },
-        { id: "stone", label: "刻まれた石碑", style: "top: 50%; left: 10%; width: 130px; height: 75px;" }
+        { id: "statue", label: "月と太陽の像", style: "top: 18%; left: 10%; width: 120px; height: 65px;" },
+        { id: "stone", label: "刻まれた石碑", style: "top: 48%; left: 10%; width: 120px; height: 65px;" }
       ],
       initDialogue: { speaker: "ヒナ", text: "これが最後の扉…！{NAME}、力を合わせて解き明かそう！" }
     }
@@ -426,17 +428,17 @@
     modal.style.display = 'flex';
 
     if (currentStage === 1) {
-      body.innerHTML = `<p style="font-size:0.8rem; color:#aaa;">4桁の数字を入力してください</p><input type="text" id="ans-input" class="code-input" maxlength="4" placeholder="0000" inputmode="numeric">`;
+      body.innerHTML = `<p style="font-size:0.75rem; color:#aaa;">4桁の数字を入力してください</p><input type="text" id="ans-input" class="code-input" maxlength="4" placeholder="0000" inputmode="numeric">`;
     } else if (currentStage === 2) {
       selectedColorSequence = [];
-      body.innerHTML = `<p style="font-size:0.8rem; color:#aaa;">正しい順番で色ボタンを押してください</p>
+      body.innerHTML = `<p style="font-size:0.75rem; color:#aaa;">正しい順番で色ボタンを押してください</p>
         <div class="color-btns">
           <button class="btn-color" style="background:#e74c3c" onclick="pressColor('赤')"></button>
           <button class="btn-color" style="background:#3498db" onclick="pressColor('青')"></button>
           <button class="btn-color" style="background:#f1c40f" onclick="pressColor('黄')"></button>
         </div><div id="color-log" style="color:#e6c669; font-weight:bold; height:1.5em;"></div>`;
     } else if (currentStage === 3) {
-      body.innerHTML = `<p style="font-size:0.8rem; color:#aaa;">英単語4文字（大文字）を入力してください</p><input type="text" id="ans-input" class="code-input" maxlength="4" placeholder="WORD" style="text-transform:uppercase;">`;
+      body.innerHTML = `<p style="font-size:0.75rem; color:#aaa;">英単語4文字（大文字）を入力してください</p><input type="text" id="ans-input" class="code-input" maxlength="4" placeholder="WORD" style="text-transform:uppercase;">`;
     }
   }
 
