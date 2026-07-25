@@ -65,15 +65,15 @@
       z-index: 1;
     }
 
-    /* ステージ画面内の右下に小さめのサイズでヒナを配置 */
+    /* 右側の余白をなくし、サイズを大きく、ダイアログとの隙間を埋めるように調整 */
     #chara-container {
       position: absolute;
-      bottom: 5px;
-      right: 10px;
-      width: 180px;
-      height: 240px;
+      bottom: -15px;
+      right: 0px;
+      width: 220px;
+      height: 300px;
       pointer-events: none;
-      z-index: 3;
+      z-index: 6;
     }
     .chara-img {
       width: 100%;
@@ -109,7 +109,6 @@
     }
     .inspect-obj:active { transform: scale(0.95); background: rgba(230, 198, 105, 0.4); }
 
-    /* すりガラスを廃止し、不透明ですっきりしたデザインに変更 */
     #dialogue-area {
       height: 210px;
       background: #14141e;
