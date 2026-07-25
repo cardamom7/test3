@@ -3,16 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>黄昏の解律師 - 調査プロトタイプ</title>
+  <title>黄昏の解律師 - 絆の謎解きミステリー</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
     body {
-      background-color: #1a1a24;
+      background-color: #0d0d12;
       color: #e0e0e0;
       font-family: 'Helvetica Neue', Arial, sans-serif;
       display: flex;
@@ -23,246 +18,421 @@
     #game-container {
       width: 100%;
       max-width: 480px;
-      height: 720px;
-      background: #252533;
-      border: 2px solid #4a4a68;
+      height: 750px;
+      background: #1a1a26;
+      border: 2px solid #5a4b7c;
       border-radius: 12px;
       display: flex;
       flex-direction: column;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
     }
-    /* ヘッダー */
     header {
-      background: #181822;
-      padding: 12px;
-      text-align: center;
+      background: #12121c;
+      padding: 10px 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       border-bottom: 1px solid #3d3d56;
+      z-index: 5;
     }
-    header h1 {
-      font-size: 1.1rem;
-      letter-spacing: 2px;
-      color: #d4af37;
+    header h1 { font-size: 0.95rem; color: #e6c669; letter-spacing: 1px; }
+    .bgm-btn {
+      background: #3d3d56; color: #fff; border: none; padding: 4px 10px;
+      border-radius: 12px; font-size: 0.75rem; cursor: pointer;
     }
-    /* ルーム画面 */
-    #room-screen {
+
+    /* ゲーム画面エリア */
+    #stage-screen {
       flex: 1;
       position: relative;
-      background: linear-gradient(to bottom, #2c2c3d, #1e1e2b);
+      background: linear-gradient(to bottom, #2a2238, #151321);
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
+      justify-content: center;
     }
+
+    /* キャラクター立ち絵表示エリア */
+    #chara-container {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 60%;
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-end;
+      pointer-events: none;
+    }
+    .chara-avatar {
+      width: 140px;
+      height: 220px;
+      transition: all 0.3s ease;
+      opacity: 0.5;
+      filter: brightness(0.6);
+    }
+    .chara-avatar.active {
+      opacity: 1;
+      filter: brightness(1);
+      transform: scale(1.05);
+    }
+
+    /* クリック要素 */
     .inspect-obj {
       position: absolute;
-      background: rgba(212, 175, 55, 0.15);
-      border: 2px dashed #d4af37;
+      background: rgba(230, 198, 105, 0.2);
+      border: 2px dashed #e6c669;
       border-radius: 8px;
-      color: #d4af37;
+      color: #fff;
       display: flex;
       justify-content: center;
       align-items: center;
       font-weight: bold;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       cursor: pointer;
-      transition: all 0.2s;
+      text-shadow: 0 1px 3px #000;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      z-index: 2;
     }
-    .inspect-obj:active {
-      transform: scale(0.95);
-      background: rgba(212, 175, 55, 0.3);
-    }
-    #obj-clock { top: 10%; left: 10%; width: 100px; height: 100px; }
-    #obj-books { top: 15%; right: 10%; width: 120px; height: 140px; }
-    #obj-safe  { bottom: 15%; left: 35%; width: 140px; height: 110px; }
+    .inspect-obj:active { transform: scale(0.95); }
 
-    /* ダイアログ＆立ち絵エリア */
+    /* ダイアログUI */
     #dialogue-area {
       height: 220px;
-      background: #13131c;
-      border-top: 2px solid #3d3d56;
-      padding: 15px;
+      background: rgba(18, 18, 28, 0.95);
+      border-top: 2px solid #5a4b7c;
+      padding: 12px 16px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      position: relative;
+      z-index: 5;
     }
-    .speaker-name {
-      color: #d4af37;
-      font-size: 0.9rem;
+    .speaker-tag {
+      font-size: 0.85rem;
       font-weight: bold;
+      padding: 2px 8px;
+      border-radius: 4px;
+      display: inline-block;
       margin-bottom: 6px;
     }
-    .dialogue-text {
-      font-size: 0.95rem;
-      line-height: 1.5;
-      color: #f0f0f0;
-      white-space: pre-wrap;
-    }
-    .hint-btn {
-      align-self: flex-end;
-      background: #3d3d56;
-      color: #fff;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.8rem;
-    }
+    .speaker-aoi { background: #2b4c7e; color: #a5c9ff; }
+    .speaker-hina { background: #7e2b53; color: #ffa5d8; }
+    .dialogue-text { font-size: 0.9rem; line-height: 1.5; color: #f0f0f0; min-height: 3em; }
 
-    /* モーダル（金庫入力画面） */
-    #safe-modal {
-      display: none;
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.85);
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 10;
+    .control-btns { display: flex; justify-content: space-between; gap: 8px; }
+    .btn-action {
+      background: #3d3d56; color: #fff; border: none; padding: 6px 12px;
+      border-radius: 6px; font-size: 0.8rem; cursor: pointer; flex: 1;
     }
-    .modal-content {
-      background: #252533;
-      padding: 24px;
-      border-radius: 12px;
-      border: 1px solid #d4af37;
-      text-align: center;
-      width: 80%;
+    .btn-action:hover { background: #5a4b7c; }
+
+    /* モーダル */
+    .modal {
+      display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85); flex-direction: column;
+      justify-content: center; align-items: center; z-index: 10;
+    }
+    .modal-box {
+      background: #222233; padding: 20px; border-radius: 12px;
+      border: 1px solid #e6c669; text-align: center; width: 85%;
     }
     .code-input {
-      width: 100%;
-      font-size: 1.8rem;
-      letter-spacing: 8px;
-      text-align: center;
-      padding: 8px;
-      margin: 15px 0;
-      background: #13131c;
-      color: #d4af37;
-      border: 1px solid #4a4a68;
-      border-radius: 6px;
+      width: 100%; font-size: 1.5rem; letter-spacing: 6px; text-align: center;
+      padding: 8px; margin: 15px 0; background: #12121c; color: #e6c669;
+      border: 1px solid #5a4b7c; border-radius: 6px;
     }
-    .modal-btns {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-    }
-    .btn {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .btn-submit { background: #d4af37; color: #1a1a24; }
-    .btn-close { background: #4a4a68; color: #fff; }
+    .color-btns { display: flex; gap: 10px; justify-content: center; margin: 15px 0; }
+    .btn-color { width: 50px; height: 50px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; }
   </style>
 </head>
 <body>
 
 <div id="game-container">
   <header>
-    <h1>FILE 01: 書斎の開かずの金庫</h1>
+    <h1 id="stage-title">STAGE 1: 書斎の金庫</h1>
+    <button class="bgm-btn" onclick="toggleBGM()">🎵 BGM ON/OFF</button>
   </header>
 
-  <!-- ルーム画面 -->
-  <div id="room-screen">
-    <div id="obj-clock" class="inspect-obj" onclick="inspect('clock')">古い掛け時計</div>
-    <div id="obj-books" class="inspect-obj" onclick="inspect('books')">整頓された本棚</div>
-    <div id="obj-safe" class="inspect-obj" onclick="inspect('safe')">堅牢な金庫</div>
+  <!-- ゲーム画面 -->
+  <div id="stage-screen">
+    <!-- オブジェクト表示エリア (JSで動的生成) -->
+    <div id="interactive-objects"></div>
+
+    <!-- 簡易キャラ立ち絵（プレースホルダーSVG） -->
+    <div id="chara-container">
+      <!-- 主人公：アオイ -->
+      <svg id="img-aoi" class="chara-avatar" viewBox="0 0 100 160">
+        <circle cx="50" cy="40" r="25" fill="#4a6fa5"/>
+        <rect x="25" y="70" width="50" height="90" rx="10" fill="#2b4c7e"/>
+        <text x="50" y="45" font-size="12" fill="#fff" text-anchor="middle">アオイ</text>
+      </svg>
+      <!-- 相棒：ヒナ -->
+      <svg id="img-hina" class="chara-avatar" viewBox="0 0 100 160">
+        <circle cx="50" cy="40" r="25" fill="#c55b8e"/>
+        <rect x="25" y="70" width="50" height="90" rx="10" fill="#7e2b53"/>
+        <text x="50" y="45" font-size="12" fill="#fff" text-anchor="middle">ヒナ</text>
+      </svg>
+    </div>
   </div>
 
-  <!-- ダイアログエリア -->
+  <!-- ダイアログ -->
   <div id="dialogue-area">
     <div>
-      <div id="speaker" class="speaker-name">相棒 シノ</div>
-      <div id="text" class="dialogue-text">気になる場所をタップして調べてみよう。この部屋のどこかに金庫を開ける鍵があるはずだ。</div>
+      <span id="speaker-tag" class="speaker-tag speaker-hina">ヒナ</span>
+      <div id="dialogue-text" class="dialogue-text">気になる場所を調べてみよ！</div>
     </div>
-    <button class="hint-btn" onclick="showHint()">ヒントを聞く</button>
+    <div class="control-btns">
+      <button class="btn-action" onclick="showHint()">ヒントを聞く</button>
+      <button class="btn-action" onclick="openPuzzle()">謎に挑む</button>
+    </div>
   </div>
 
-  <!-- 金庫解除モーダル -->
-  <div id="safe-modal">
-    <div class="modal-content">
-      <h3>ダイヤルロック</h3>
-      <p style="font-size: 0.8rem; color: #aaa; margin-top: 5px;">4桁の数字を入力してください</p>
-      <input type="text" id="passcode" class="code-input" maxlength="4" placeholder="0000" inputmode="numeric">
-      <div class="modal-btns">
-        <button class="btn btn-submit" onclick="checkCode()">解除</button>
-        <button class="btn btn-close" onclick="closeModal()">戻る</button>
+  <!-- 解答用モーダル -->
+  <div id="puzzle-modal" class="modal">
+    <div class="modal-box">
+      <h3 id="modal-title">鍵の解錠</h3>
+      <div id="modal-body"></div>
+      <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center;">
+        <button class="btn-action" onclick="submitAnswer()">回答する</button>
+        <button class="btn-action" onclick="closeModal()">戻る</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-  // ゲームの状態管理
-  const state = {
-    clockInspected: false,
-    booksInspected: false,
-    cleared: false
+  // --- ゲーム状態管理 ---
+  let currentStage = 1;
+  let stageState = { inspected1: false, inspected2: false };
+  let selectedColorSequence = [];
+
+  // ステージ定義
+  const stages = {
+    1: {
+      title: "STAGE 1: 書斎の金庫",
+      objs: [
+        { id: "clock", label: "古びた時計", style: "top: 15%; left: 15%; width: 100px; height: 100px;" },
+        { id: "books", label: "整頓された本棚", style: "top: 20%; right: 15%; width: 110px; height: 130px;" }
+      ],
+      initDialogue: { speaker: "ヒナ", text: "アオイ、ここが最初の部屋だね！まずは怪しい場所を調べてみようよ。" }
+    },
+    2: {
+      title: "STAGE 2: 宝石のオルゴール",
+      objs: [
+        { id: "picture", label: "三色の絵画", style: "top: 15%; left: 20%; width: 130px; height: 90px;" },
+        { id: "letter", label: "机の上の手紙", style: "bottom: 30%; right: 20%; width: 100px; height: 80px;" }
+      ],
+      initDialogue: { speaker: "アオイ", text: "ふう、次の部屋ね。綺麗なお部屋だけど…あのテーブルのオルゴールが怪しいわ。" }
+    },
+    3: {
+      title: "STAGE 3: 最後の封印扉",
+      objs: [
+        { id: "statue", label: "月と太陽の像", style: "top: 15%; left: 10%; width: 110px; height: 120px;" },
+        { id: "stone", label: "刻まれた石碑", style: "top: 20%; right: 10%; width: 120px; height: 110px;" }
+      ],
+      initDialogue: { speaker: "ヒナ", text: "これが最後の扉…！重厚な空気だね。アオイ、力を合わせて解き明かそう！" }
+    }
   };
 
-  const speakerEl = document.getElementById('speaker');
-  const textEl = document.getElementById('text');
+  // --- ダイアログ更新 ---
+  function setDialogue(speaker, text) {
+    const tag = document.getElementById('speaker-tag');
+    const textEl = document.getElementById('dialogue-text');
+    const aoiImg = document.getElementById('img-aoi');
+    const hinaImg = document.getElementById('img-hina');
 
-  function setDialogue(speaker, message) {
-    speakerEl.textContent = speaker;
-    textEl.textContent = message;
-  }
+    tag.textContent = speaker === 'アオイ' ? '主人公 アオイ' : '相棒 ヒナ';
+    tag.className = `speaker-tag ${speaker === 'アオイ' ? 'speaker-aoi' : 'speaker-hina'}`;
+    textEl.textContent = text;
 
-  // オブジェクト調査
-  function inspect(type) {
-    if (state.cleared) {
-      setDialogue("相棒 シノ", "無事に事件解決だな！次の事件現場に向かおう。");
-      return;
-    }
-
-    if (type === 'clock') {
-      state.clockInspected = true;
-      setDialogue("相棒 シノ", "「3時」でピタリと止まっている掛け時計だね。\n文字盤の裏に小さく『千の位は止まった時間』と書かれているぞ…？");
-    } else if (type === 'books') {
-      state.booksInspected = true;
-      setDialogue("相棒 シノ", "本棚に『怪異大全』という本がある。\n『百の位は0、十の位は5、一の位は2』と怪しげなメモが挟まっていたよ。");
-    } else if (type === 'safe') {
-      setDialogue("相棒 シノ", "これが噂の金庫か…！4桁の数字で解錠できるみたいだ。入力してみるかい？");
-      document.getElementById('safe-modal').style.style = '';
-      document.getElementById('safe-modal').style.display = 'flex';
+    if (speaker === 'アオイ') {
+      aoiImg.classList.add('active');
+      hinaImg.classList.remove('active');
+    } else {
+      hinaImg.classList.add('active');
+      aoiImg.classList.remove('active');
     }
   }
 
-  // ヒント機能
+  // --- ステージロード ---
+  function loadStage(stageNum) {
+    currentStage = stageNum;
+    stageState = { inspected1: false, inspected2: false };
+    selectedColorSequence = [];
+
+    const data = stages[stageNum];
+    document.getElementById('stage-title').textContent = data.title;
+
+    // オブジェクト描画
+    const container = document.getElementById('interactive-objects');
+    container.innerHTML = '';
+    data.objs.forEach((obj, index) => {
+      const el = document.createElement('div');
+      el.className = 'inspect-obj';
+      el.style = obj.style;
+      el.textContent = obj.label;
+      el.onclick = () => inspectObject(index + 1, obj.id);
+      container.appendChild(el);
+    });
+
+    setDialogue(data.initDialogue.speaker, data.initDialogue.text);
+  }
+
+  // --- オブジェクト調べ ---
+  function inspectObject(num, id) {
+    stageState[`inspected${num}`] = true;
+
+    if (currentStage === 1) {
+      if (id === 'clock') {
+        setDialogue("アオイ", "「3時」で止まっている時計ね。裏側に『千の位は止まった刻』と刻まれているわ。");
+      } else {
+        setDialogue("ヒナ", "本棚からメモを発見！『百の位は0、十の位は5、一の位は2』だって！");
+      }
+    } else if (currentStage === 2) {
+      if (id === 'picture') {
+        setDialogue("ヒナ", "綺麗な絵画！『赤・青・黄』のチューリップが描かれてるね。");
+      } else {
+        setDialogue("アオイ", "手紙には『情熱（赤）で始まり、空（青）を見上げ、光（黄）に至る』と書いてあるわ。");
+      }
+    } else if (currentStage === 3) {
+      if (id === 'statue') {
+        setDialogue("アオイ", "像の台座に『夜を照らす真実の言葉（英字4文字）を刻め』とあるわね。");
+      } else {
+        setDialogue("ヒナ", "石碑の文字だ！『Mで始まり、Nで終わる。夜空に浮かぶ丸いもの…』何だろう？");
+      }
+    }
+  }
+
+  // --- ヒント ---
   function showHint() {
-    if (state.cleared) {
-      setDialogue("相棒 シノ", "もう金庫は開いたよ。お見事だったね！");
-      return;
-    }
-    if (!state.clockInspected && !state.booksInspected) {
-      setDialogue("相棒 シノ", "まずは『掛け時計』と『本棚』を調べて、数字のヒントを集めよう。");
-    } else if (!state.clockInspected) {
-      setDialogue("相棒 シノ", "『掛け時計』にまだ見ていない手がかりがありそうだ。");
-    } else if (!state.booksInspected) {
-      setDialogue("相棒 シノ", "『本棚』の方もよく調べてみよう。");
-    } else {
-      setDialogue("相棒 シノ", "手がかりは揃った！\n千の位は『時計の時間(3)』、残り三桁は『本棚のメモ(0,5,2)』だ！");
+    if (currentStage === 1) {
+      setDialogue("ヒナ", "時計の数字(3)と、本のメモ(052)を繋げると4桁の番号になるはずだよ！");
+    } else if (currentStage === 2) {
+      setDialogue("アオイ", "手紙の文章が示す色の順番（情熱→空→光）を試してみましょう。");
+    } else if (currentStage === 3) {
+      setDialogue("ヒナ", "「Mから始まってNで終わる、夜空の丸いもの」…月（つき）を英語で言うと何だっけ？");
     }
   }
 
-  // モーダル操作
+  // --- 謎解きモーダル表示 ---
+  function openPuzzle() {
+    const modal = document.getElementById('puzzle-modal');
+    const body = document.getElementById('modal-body');
+    modal.style.display = 'flex';
+
+    if (currentStage === 1) {
+      body.innerHTML = `
+        <p style="font-size:0.8rem; color:#aaa;">4桁の数字を入力してください</p>
+        <input type="text" id="ans-input" class="code-input" maxlength="4" placeholder="0000">
+      `;
+    } else if (currentStage === 2) {
+      selectedColorSequence = [];
+      body.innerHTML = `
+        <p style="font-size:0.8rem; color:#aaa;">正しい順番で色ボタンを押してください</p>
+        <div class="color-btns">
+          <button class="btn-color" style="background:#e74c3c" onclick="pressColor('赤')"></button>
+          <button class="btn-color" style="background:#3498db" onclick="pressColor('青')"></button>
+          <button class="btn-color" style="background:#f1c40f" onclick="pressColor('黄')"></button>
+        </div>
+        <div id="color-log" style="color:#e6c669; font-weight:bold; height:1.5em;"></div>
+      `;
+    } else if (currentStage === 3) {
+      body.innerHTML = `
+        <p style="font-size:0.8rem; color:#aaa;">英単語4文字（大文字）を入力してください</p>
+        <input type="text" id="ans-input" class="code-input" maxlength="4" placeholder="WORD" style="text-transform:uppercase;">
+      `;
+    }
+  }
+
+  function pressColor(color) {
+    selectedColorSequence.push(color);
+    document.getElementById('color-log').textContent = selectedColorSequence.join(" ➔ ");
+  }
+
   function closeModal() {
-    document.getElementById('safe-modal').style.display = 'none';
+    document.getElementById('puzzle-modal').style.display = 'none';
   }
 
-  // 解錠判定
-  function checkCode() {
-    const input = document.getElementById('passcode').value;
-    if (input === "3052") {
-      state.cleared = true;
-      closeModal();
-      setDialogue("相棒 シノ", "『カチリ…』\nやった！金庫が開いたぞ！中から『封印された秘宝』が出てきた！さすがプロデューサー、素晴らしいナゾ解きだ！");
-    } else {
-      alert("カチャ… 鍵が開かない。番号が違うようだ。");
+  // --- 回答判定 ---
+  function submitAnswer() {
+    if (currentStage === 1) {
+      const val = document.getElementById('ans-input').value;
+      if (val === '3052') {
+        closeModal();
+        setDialogue("アオイ", "見事ね！金庫が開いて『台座の鍵』を手に入れたわ。次の部屋へ行きましょう！");
+        setTimeout(() => loadStage(2), 2500);
+      } else {
+        alert("番号が違うようだ…");
+      }
+    } else if (currentStage === 2) {
+      if (selectedColorSequence.join(",") === "赤,青,黄") {
+        closeModal();
+        setDialogue("ヒナ", "やった〜！きれいな音色が鳴って奥の隠し扉が開いたよ！ラストスパートだね！");
+        setTimeout(() => loadStage(3), 2500);
+      } else {
+        alert("音が響かない… 順番が違うようだ。");
+        selectedColorSequence = [];
+        document.getElementById('color-log').textContent = '';
+      }
+    } else if (currentStage === 3) {
+      const val = document.getElementById('ans-input').value.toUpperCase();
+      if (val === 'MOON') {
+        closeModal();
+        gameClear();
+      } else {
+        alert("扉はびくともしない…");
+      }
     }
   }
+
+  // --- ゲームクリア ---
+  function gameClear() {
+    document.getElementById('interactive-objects').innerHTML = '';
+    setDialogue("ヒナ", "アオイ！大きな扉が開いたよ！見て、外には満天の星空が…！");
+
+    setTimeout(() => {
+      setDialogue("アオイ", "ええ、本当に綺麗ね。…ヒナが隣にいてくれたから、最後まで解き明かせたわ。ありがとう。");
+    }, 3000);
+
+    setTimeout(() => {
+      setDialogue("ヒナ", "へへっ、アオイにそう言われると照れちゃうな。これからも最高の相棒として、よろしくね！");
+      document.getElementById('stage-title').textContent = "🎉 GAME CLEAR! 🎉";
+    }, 6000);
+  }
+
+  // --- 簡易BGM機能（Web Audio API synthesized） ---
+  let audioCtx = null;
+  let isBgmPlaying = false;
+  let bgmInterval = null;
+
+  function toggleBGM() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    if (isBgmPlaying) {
+      clearInterval(bgmInterval);
+      isBgmPlaying = false;
+    } else {
+      isBgmPlaying = true;
+      let notes = [261.63, 329.63, 392.00, 493.88]; // C, E, G, B
+      let step = 0;
+      bgmInterval = setInterval(() => {
+        let osc = audioCtx.createOscillator();
+        let gain = audioCtx.createGain();
+        osc.frequency.value = notes[step % notes.length];
+        gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.8);
+        step++;
+      }, 600);
+    }
+  }
+
+  // 初期ロード
+  loadStage(1);
 </script>
 
 </body>
